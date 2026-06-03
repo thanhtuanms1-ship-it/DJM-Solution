@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hệ Thống Quản Lý Tổng Hợp DJ&M</title>
+    <style>
+        body { font-family: Arial; margin: 0; background: #f4f6f9; min-height: 100vh; padding-bottom: 50px; box-sizing: border-box; }
+        #main-dashboard { font-family: Arial, sans-serif; background: #f0f2f5; padding: 20px; min-height: 100vh; box-sizing: border-box; }
+        .db-container { max-width: 800px; margin: 0 auto; text-align: center; }
+        .db-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 16px; margin-top: 20px; }
+        .db-btn { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .db-btn:hover { transform: translateY(-3px); border-color: #007bff; }
+        .db-icon { font-size: 32px; } .db-title { font-size: 15px; font-weight: bold; color: #334155; }
+        .app-section { display: none; } .app-section.active { display: block; }
+        .btn-to-dashboard { background: #1e293b; color: #fff; border: none; padding: 8px 14px; border-radius: 6px; font-weight: bold; cursor: pointer; margin: 10px 0; font-size: 14px; display: inline-flex; align-items: center; gap: 6px; }
+        .box { max-width: 1200px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); position: relative; }
+        .grid { display: flex; flex-direction: column; gap: 8px; margin-top: 15px; }
+        .card { border: 1px solid #cbd5e1; border-radius: 6px; padding: 10px 12px; background: #fff; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .inp-name { font-size: 16px; font-weight: bold; width: 40%; border: none; border-bottom: 1px dashed #94a3b8; padding: 2px 0; color: #334155; }
+        .card-right { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+        .card-salary { font-size: 14px; font-weight: bold; color: #28a745; min-width: 110px; text-align: right; }
+        .btn-del { background: none; border: none; color: #dc3545; font-weight: bold; cursor: pointer; font-size: 14px; padding: 6px; }
+        .btn-del.confirm-state { background: #fee2e2; border: 1px solid #fca5a5; border-radius: 4px; font-size: 11px; padding: 4px 6px; }
+        .btn-cc { background: #007bff; color: #fff; border: none; font-weight: bold; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 14px; }
+        .sticky { position: sticky; top: 0; background: #fff; padding: 5px 0 10px 0; z-index: 100; border-bottom: 2px solid #ccc; }
+        .row { display: flex; gap: 8px; background: #eee; padding: 10px; border-radius: 4px; align-items: center; flex-wrap: wrap; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; table-layout: fixed; }
+        th, td { border: 1px solid #ddd; padding: 6px 4px; text-align: center; font-size: 13px; word-break: break-word; }
+        th { background: #333; color: #fff; position: sticky; z-index: 99; }
+        .col-short { width: 8%; } .col-medium { width: 10%; } .col-note { width: 30%; text-align: left !important; padding-left: 8px; }
+        .sun { background: #ffeb3b !important; font-weight: bold; }
+        .active-row { outline: 2px solid #007bff; background: #e8f4fd; }
+        .out-box { margin-left: auto; display: flex; gap: 10px; font-weight: bold; font-size: 12px; background: #fff; padding: 6px 10px; border-radius: 4px; border: 1px solid #ddd; align-items: center; flex-wrap: wrap; }
+        .red { color: #d9534f; border-left: 2px solid #ccc; padding-left: 10px; }
+        .orange { color: #f39c12; border-left: 2px solid #ccc; padding-left: 10px; }
+        .green { color: #28a745; border-left: 2px solid #ccc; padding-left: 10px; font-size: 13px; }
+        .copyright { position: fixed; bottom: 10px; right: 15px; font-size: 12px; color: #64748b; font-weight: bold; background: rgba(244, 246, 249, 0.9); padding: 4px 8px; border-radius: 4px; z-index: 1000; pointer-events: none; }
+        @media (max-width: 600px) { th, td { padding: 5px 2px; font-size: 11px; } .col-short { width: 9%; } .col-medium { width: 11%; } .col-note { width: 28%; } }
+        .kk-container { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); width: 100%; max-width: 500px; box-sizing: border-box; margin: 0 auto; }
+        .kk-tabs { display: flex; background: #eee; border-radius: 10px; padding: 5px; margin-bottom: 25px; }
+        .kk-tab-btn { flex: 1; padding: 12px; border: none; background: none; border-radius: 8px; font-weight: bold; color: #666; font-size: 15px; cursor: pointer; }
+        .kk-tab-btn.active { background: white; color: #1a73e8; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .kk-tab-content { display: none; } .kk-tab-content.active { display: block; }
+        .kk-input-group { margin-bottom: 18px; text-align: left; }
+        .kk-input-group label { display: block; font-size: 14px; margin-bottom: 8px; color: #555; font-weight: 500; }
+        .kk-input-group input { width: 100%; padding: 15px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; font-size: 18px; background: #fafafa; input, select, button { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; } }
+        .kk-btn-group { display: flex; gap: 10px; margin-top: 15px; }
+        .kk-btn { flex: 2; padding: 16px; background-color: #1a73e8; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .kk-btn-history { flex: 1; background-color: #e8f0fe; color: #1a73e8; font-size: 15px; border: 1px solid #c2e7ff; }
+        .kk-result-box { margin-top: 25px; padding: 20px; border-radius: 10px; text-align: center; display: none; font-size: 1.2rem; font-weight: bold; }
+        .kk-success { background-color: #e6f4ea; color: #1e8e3e; border: 1px solid #34a853; }
+        .kk-error { background-color: #fce8e6; color: #d93025; border: 1px solid #ea4335; }
+        .kk-history-section { display: none; width: 100%; max-width: 600px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: 20px auto 0 auto; box-sizing: border-box; }
+        .kk-history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .kk-history-title { font-size: 1.1rem; font-weight: bold; color: #333; text-transform: uppercase; }
+        .kk-btn-clear { background: #ea4335; color: white; padding: 10px 15px; font-size: 13px; border-radius: 8px; width: auto; font-weight: bold; min-width: 100px; text-align: center; border: none; cursor: pointer; }
+        .kk-btn-clear.confirm-state { background: #b31412 !important; border: 2px solid #fff; }
+        .kk-table-responsive { width: 100%; overflow-x: auto; border: 1px solid #eee; border-radius: 8px; }
+        .kk-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 14px; min-width: 450px; }
+        .kk-table th, .kk-table td { padding: 12px; border-bottom: 1px solid #eee; background: none; color: #333; position: static; }
+        .kk-table th { background-color: #f1f3f4; color: #5f6368; font-weight: 600; }
+        .kk-text-res { color: #1e8e3e; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 2A: DASHBOARD, HÀNH CHÍNH & THỜI VỤ            -->
+    <!-- =================================================== -->
+    <!-- MENU CHÍNH TỔNG (DASHBOARD) -->
+    <div id="main-dashboard" class="app-section active">
+        <div class="db-container">
+            <h1 style="color:#1e293b; font-size:26px; margin:20px 0 5px 0; font-weight:bold;">HỆ THỐNG QUẢN LÝ DJ&M</h1>
+            <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Vui lòng chọn chức năng chấm công, kiểm kê hoặc xem lịch</p>
+            <div class="db-grid">
+                <div class="db-btn" onclick="switchScreen('attendance-section')">
+                    <span class="db-icon">💼</span><span class="db-title">Chấm Công Hành Chính</span>
+                </div>
+                <div class="db-btn" onclick="switchScreen('seasonal-section')">
+                    <span class="db-icon">📅</span><span class="db-title">Chấm Công Thời Vụ</span>
+                </div>
+                
+                <div class="db-btn" onclick="switchScreen('calendar-section'); initCalendar();">
+                    <span class="db-icon">🗓️</span><span class="db-title">Xem Lịch & Kỷ Niệm</span>
+                </div>
+                <div class="db-btn" onclick="switchScreen('expense-section'); renderExpenseHistory();">
+                    <span class="db-icon">💰</span>
+                    <span class="db-title">Quản Lý Chi Tiêu</span>
+                </div>
+		<!-- THAY THẾ NÚT KIỂM KÊ CŨ BẰNG NÚT NÀY -->
+                <div class="db-btn" onclick="switchScreen('inventory-lock-section'); document.getElementById('pinInput').value=''; document.getElementById('pinInput').focus();">
+                    <span class="db-icon">🔍</span>
+                    <span class="db-title">Kiểm Kê Tồn Kho</span>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANG CHẤM CÔNG HÀNH CHÍNH -->
+    <div id="attendance-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button></div>
+        <div class="box">
+            <div id="home">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:10px;">
+                    <h2 style="margin:0; font-size: 16px; color: #475569;">DANH SÁCH NHÂN VIÊN HÀNH CHÍNH</h2>
+                    <button onclick="addEmp()" style="background:#28a745; color:#fff; font-weight:bold; border:none; padding:6px 12px; font-size:14px;">+ Thêm NV</button>
+                </div>
+                <div class="grid" id="gridBox"></div>
+            </div>
+            <div id="att" style="display: none;">
+                <div class="sticky" id="stTop">
+                    <div class="row">
+                        <button onclick="back()" style="background:#64748b; color:#fff;">Trang chủ</button> <b id="curName" style="color: #007bff;"></b>
+                        <label>Tháng: <select id="m" onchange="init(true)"></select></label>
+                        <label>Năm: <input type="number" id="y" style="width:65px" onchange="init(true)"></label>
+                        <label>Lương: <input type="number" id="sal" style="width:90px" oninput="saveCfg()"></label>
+                        <label>Trợ cấp: <input type="number" id="allow" style="width:80px" oninput="saveCfg()"></label>
+                        <label style="border-left: 2px solid #ccc; padding-left: 10px;">Ngày: <select id="sDay" onchange="scrollDay()"></select></label>
+                        <label>Giờ: <input type="number" id="hrs" value="8" step="0.5" style="width:50px"></label>
+                        <label>Ghi chú: <input type="text" id="note" placeholder="Nghỉ phép..." style="width:110px"></label>
+                        <button onclick="update()" style="background:#007bff; color:#fff; font-weight:bold;">Lưu</button>
+                        <div class="out-box" id="out"></div>
+                    </div>
+                </div>
+                <table style="display: table; overflow-x: auto;">
+                    <thead><tr><th class="col-short">Thứ</th><th class="col-short">Ngày</th><th class="col-short">Tổng Giờ</th><th class="col-medium">Công Thường</th><th class="col-short">TC 1.5</th><th class="col-short">TC 1.85</th><th class="col-medium">Giờ CN (2.0)</th><th class="col-note">Ghi chú</th></tr></thead>
+                    <tbody id="tb"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRANG CHẤM CÔNG THỜI VỤ -->
+    <div id="seasonal-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button></div>
+        <div class="box">
+            <div id="home-tv">
+                <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:10px;">
+                    <h2 style="margin:0; font-size: 16px; color: #475569;">DANH SÁCH NHÂN VIÊN THỜI VỤ</h2>
+                    <button onclick="addEmpTV()" style="background:#28a745; color:#fff; font-weight:bold; border:none; padding:6px 12px; font-size:14px;">+ Thêm NV TV</button>
+                </div>
+                <div class="grid" id="gridBoxTV"></div>
+            </div>
+            <div id="att-tv" style="display: none;">
+                <div class="sticky" id="stTopTV">
+                    <div class="row">
+                        <button onclick="backTV()" style="background:#64748b; color:#fff;">Trang chủ</button> <b id="curNameTV" style="color: #007bff;"></b>
+                        <label>Tháng: <select id="mTV" onchange="initTV(true)"></select></label>
+                        <label>Năm: <input type="number" id="yTV" style="width:65px" onchange="initTV(true)"></label>
+                        <label>Lương CB: <input type="number" id="salTV" style="width:90px" oninput="saveCfgTV()"></label>
+                        <label>Trợ cấp: <input type="number" id="allowTV" style="width:75px" oninput="saveCfgTV()"></label>
+                        <label>Giá TC Thường: <input type="number" id="pT1" style="width:75px" oninput="saveCfgTV()"></label>
+                        <label>Giá TC Đêm: <input type="number" id="pT2" style="width:75px" oninput="saveCfgTV()"></label>
+                        <label>Giá TC CN: <input type="number" id="pCN" style="width:75px" oninput="saveCfgTV()"></label>
+                        <label style="border-left: 2px solid #ccc; padding-left: 10px;">Ngày: <select id="sDayTV" onchange="scrollDayTV()"></select></label>
+                        <label>Giờ: <input type="number" id="hrsTV" value="8" step="0.5" style="width:50px"></label>
+                        <label>Ghi chú: <input type="text" id="noteTV" placeholder="Ghi chú..." style="width:110px"></label>
+                        <button onclick="updateTV()" style="background:#007bff; color:#fff; font-weight:bold;">Lưu</button>
+                        <div class="out-box" id="outTV"></div>
+                    </div>
+                </div>
+                <table style="display: table; overflow-x: auto;">
+                    <thead><tr><th class="col-short">Thứ</th><th class="col-short">Ngày</th><th class="col-short">Tổng Giờ</th><th class="col-medium">Công Thường</th><th class="col-short">TC Thường</th><th class="col-short">TC Đêm</th><th class="col-medium">Giờ CN</th><th class="col-note">Ghi chú</th></tr></thead>
+                    <tbody id="tbTV"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 2B: GIAO DIỆN HTML KIỂM KÊ & LỊCH KỶ NIỆM      -->
+    <!-- =================================================== -->
+    <!-- TRANG KIỂM KÊ TỒN KHO -->
+    <!-- MÀN HÌNH KHÓA BẢO MẬT TRANG KIỂM KÊ -->
+    <div id="inventory-lock-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+            <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button>
+        </div>
+        <div class="kk-container" style="max-width: 400px; text-align: center; margin-top: 50px;">
+            <span style="font-size: 45px;">🔒</span>
+            <h2 style="margin: 15px 0 5px 0; color: #1e293b; font-size: 20px;">Yêu Cầu Mật Khẩu</h2>
+            <p style="color: #64748b; font-size: 13px; margin: 0 0 20px 0;">Vui lòng nhập mật khẩu để truy cập Kiểm Kê</p>
+            
+            <div class="kk-input-group" style="margin-bottom: 15px;">
+                <input type="password" id="pinInput" maxlength="6" inputmode="numeric" placeholder="••••" style="text-align: center; font-size: 26px; letter-spacing: 5px; font-weight: bold; padding: 12px;">
+            </div>
+            
+            <button class="kk-btn" style="width: 100%; font-size: 16px; padding: 14px;" onclick="checkInventoryPin()">XÁC NHẬN TRUY CẬP</button>
+        </div>
+    </div>
+
+    <div id="inventory-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button></div>
+        <div class="kk-container" id="mainContainer">
+            <div class="kk-tabs">
+                <button class="kk-tab-btn active" onclick="openTab(event, 'tabPaper')">Tính tồn TM'L</button>
+                <button class="kk-tab-btn" onclick="openTab(event, 'tabSeal')">Tính tồn Seal</button>
+            </div>
+            <div id="tabPaper" class="kk-tab-content active">
+                <h2>Tính Tồn TM'l</h2>
+                <div class="kk-input-group"><label>Đường kính lõi (mm)</label><input type="number" id="d_core" placeholder="Kích thước lõi"></div>
+                <div class="kk-input-group"><label>Đường kính cuộn đầy (mm)</label><input type="number" id="D_full" placeholder="Kích thước cuộn chưa sử dụng"></div>
+                <div class="kk-input-group"><label>Đường kính còn lại (mm)</label><input type="number" id="D_current" placeholder="Kích thước cuộn đã sử dụng"></div>
+                <div class="kk-input-group"><label>Số lượng TM'L khi đầy</label><input type="number" id="N_total" placeholder="Số lượng TM'L trên tem"></div>
+                <div class="kk-btn-group"><button class="kk-btn" onclick="tinhGiay()">XEM KẾT QUẢ</button><button class="kk-tab-btn kk-btn-history" onclick="xemLichSu('tabPaper')">LỊCH SỬ</button></div>
+                <div id="resPaper" class="kk-result-box"></div>
+            </div>
+            <div id="tabSeal" class="kk-tab-content">
+                <h2>Tính Số Lượng Seal</h2>
+                <div class="kk-input-group"><label>Số lượng mẫu (đếm tay)</label><input type="number" id="S_sample_count" placeholder="50 EA trở lên"></div>
+                <div class="kk-input-group"><label>Khối lượng mẫu (gam)</label><input type="number" id="S_sample_weight" placeholder="Cân số mẫu bên trên"></div>
+                <div class="kk-input-group"><label>Tổng khối lượng thực tế (gam)</label><input type="number" id="S_total_weight" placeholder="Bỏ hết lên cân"></div>
+                <div class="kk-btn-group"><button class="kk-btn" onclick="tinhSeal()">XEM KẾT QUẢ</button><button class="kk-tab-btn kk-btn-history" onclick="xemLichSu('tabSeal')">LỊCH SỬ</button></div>
+                <div id="resSeal" class="kk-result-box"></div>
+            </div>
+        </div>
+        <div class="kk-history-section" id="historySection">
+            <div class="kk-history-header"><span class="kk-history-title" id="historyTitle">Lịch sử</span><button class="kk-btn-clear" id="btnClearHistory" onclick="xoaLichSuCurrentTab()">XÓA HẾT</button></div>
+            <div class="kk-table-responsive" id="historyTableContainer"></div>
+        </div>
+    </div>
+
+    <!-- TRANG XEM LỊCH & KỶ NIỆM -->
+    <div id="calendar-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button></div>
+        <div class="kk-container" style="max-width: 600px;">
+            <h2>Lịch Tháng & Âm Lịch</h2>
+            <div style="display:flex; justify-content:space-between; gap:10px; margin-bottom:15px;">
+                <button onclick="changeMonth(-1)" style="padding:5px 10px; font-size:14px; background:#1a73e8; color:#fff; border:none; border-radius:5px;">< Trước</button>
+                <div style="display:flex; flex-direction:column; align-items:center; gap:2px;">
+                    <b id="calTitle" style="font-size:16px; color:#333;"></b>
+                    <button onclick="goTodayCalendar()" style="padding:2px 8px; font-size:11px; background:#e8f0fe; color:#1a73e8; border:1px solid #c2e7ff; border-radius:4px; font-weight:bold; cursor:pointer; width:auto; height:auto;">Hôm nay</button>
+                </div>
+                <button onclick="changeMonth(1)" style="padding:5px 10px; font-size:14px; background:#1a73e8; color:#fff; border:none; border-radius:5px;">Sau ></button>
+            </div>
+            <table style="table-layout:fixed; width:100%; border-collapse:collapse; margin-bottom:20px;">
+                <thead><tr style="background:#f1f3f4; color:#666;"><th style="padding:8px 2px; font-size:12px; color:red; background:none;">CN</th><th style="padding:8px 2px; font-size:12px; background:none;">T2</th><th style="padding:8px 2px; font-size:12px; background:none;">T3</th><th style="padding:8px 2px; font-size:12px; background:none;">T4</th><th style="padding:8px 2px; font-size:12px; background:none;">T5</th><th style="padding:8px 2px; font-size:12px; background:none;">T6</th><th style="padding:8px 2px; font-size:12px; background:none;">T7</th></tr></thead>
+                <tbody id="calendarBody"></tbody>
+            </table>
+            <div style="border-top:2px dashed #ddd; padding-top:15px; text-align:left;">
+                <h3 style="margin:0 0 10px 0; font-size:15px; color:#1e293b; text-transform:uppercase; text-align:center;">Góc Kỷ Niệm Tự Động Đếm Ngày</h3>
+                <div style="display:flex; gap:5px; margin-bottom:15px;">
+                    <input type="text" id="knTitle" placeholder="Tên kỷ niệm (VD: Ngày cưới...)" style="flex:2; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:5px;">
+                    <input type="date" id="knDate" style="flex:1.5; padding:8px; font-size:14px; border:1px solid #ddd; border-radius:5px;">
+                    <button onclick="addKyNiem()" style="background:#28a745; color:#fff; font-size:13px; font-weight:bold; padding:8px 5px; border:none; border-radius:5px; height:auto; width:auto;">Thêm</button>
+                </div>
+                <div id="kyNiemList" style="display:flex; flex-direction:column; gap:8px;"></div>
+            </div>
+        </div>
+    </div>
+
+       <!-- =================================================== -->
+    <!-- THAY THẾ TOÀN BỘ KHỐI TRANG QUẢN LÝ CHI TIÊU BẰNG ĐOẠN NÀY -->
+    <!-- =================================================== -->
+    <!-- TRANG QUẢN LÝ CHI TIÊU -->
+    <div id="expense-section" class="app-section">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+            <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button>
+        </div>
+        <div class="kk-container" style="max-width: 550px;">
+            <!-- Tiêu đề đã được cấu hình canh giữa tự động -->
+            <h2 style="margin: 0 0 15px 0; color: #1e293b; text-align: center; font-size: 22px;">Quản Lý Thu Chi</h2>
+            
+            <!-- Biểu mẫu nhập liệu: Các ô nhập đã đồng bộ kích thước 100% bằng nhau và ô ngày canh trái -->
+            <div class="kk-input-group">
+                <label>Ngày thực hiện</label>
+                <input type="date" id="exDate" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; text-align: left; box-sizing: border-box;">
+            </div>
+            <div class="kk-input-group">
+                <label>Loại giao dịch</label>
+                <select id="exType" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
+                    <option value="thu">📈 THU VÀO </option>
+                    <option value="chi">📉 CHI RA </option>
+                </select>
+            </div>
+            <div class="kk-input-group">
+                <label>Nội dung / Lý do</label>
+                <input type="text" id="exReason" placeholder="Ví dụ: Nhận lương, Mua quà ..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
+            </div>
+            <div class="kk-input-group">
+                <label>Số tiền (VND)</label>
+                <input type="number" id="exAmount" inputmode="numeric" placeholder="Nhập số tiền" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
+            </div>
+            
+            <button class="kk-btn" style="width: 100%; margin-top: 5px; margin-bottom: 20px;" onclick="addExpenseItem()">GHI SỔ</button>
+
+            <!-- Khối thống kê cân đối tài chính (Gap) -->
+            <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; font-weight: bold; font-size: 12px;">
+                <div style="flex: 1; background: #e6f4ea; color: #1e8e3e; padding: 10px; border-radius: 8px; border: 1px solid #34a853; text-align: center;">Tổng Thu:<br><span id="totalThuBox" style="font-size: 14px;">0 đ</span></div>
+                <div style="flex: 1; background: #fce8e6; color: #d93025; padding: 10px; border-radius: 8px; border: 1px solid #ea4335; text-align: center;">Tổng Chi:<br><span id="totalChiBox" style="font-size: 14px;">0 đ</span></div>
+                <div style="flex: 1; background: #e8f0fe; color: #1a73e8; padding: 10px; border-radius: 8px; border: 1px solid #1a73e8; text-align: center;">Số Dư (Gap):<br><span id="gapBox" style="font-size: 14px;">0 đ</span></div>
+            </div>
+
+            <!-- Bảng lịch sử dòng tiền -->
+            <h3 style="margin: 15px 0 8px 0; font-size: 14px; color: #475569; text-transform: uppercase; text-align: left;">Lịch sử giao dịch</h3>
+            <!-- THAY THẾ CỤM TABLE LỊCH SỬ THU CHI CŨ BẰNG ĐOẠN NÀY -->
+            <div class="kk-table-responsive">
+                <table class="kk-table" style="width: 100%; table-layout: fixed;">
+                    <thead>
+                        <tr>
+                            <!-- Co hẹp tối đa các cột thừa để nhường chỗ cho cột Nội dung -->
+                            <th style="width: 35px; font-size: 11px; padding: 8px 2px;">Ngày</th>
+                            <th style="width: 35px; font-size: 11px; padding: 8px 2px;">Loại</th>
+                            <th style="font-size: 11px; padding: 8px 4px; text-align: left;">Nội dung / Lý do</th>
+                            <th style="width: 80px; font-size: 11px; padding: 8px 2px; text-align: right;">Số tiền</th>
+                            <th style="width: 45px; font-size: 11px; padding: 8px 2px;">Tác vụ</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expenseHistoryBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+
+
+        <!-- THAY THẾ DÒNG BẢN QUYỀN CŨ BẰNG DÒNG NÀY -->
+    <div class="copyright" id="cpLabel" ondblclick="showContactSecret()" style="cursor: pointer; pointer-events: auto;" title="Nhấn 2 lần nhanh để xem thông tin">Chỉ tính lương DJ&M</div>
+
+    <!-- MÀN HÌNH BÍ MẬT GHI THÔNG TIN LIÊN HỆ -->
+    <div id="contact-secret-section" class="app-section" style="padding: 20px; box-sizing: border-box;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+            <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button>
+        </div>
+        <div class="kk-container" style="max-width: 450px; text-align: left; background: #ffffff; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-top: 30px;">
+            <h2 style="color: #1a73e8; margin-top: 0; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; text-align: center;">Thông Tin Liên Hệ</h2>
+            <div style="margin: 15px 0; font-size: 16px; color: #334155; line-height: 1.6;">
+                <p><strong>Name:</strong> Võ Thanh Tuấn</p>
+                <p><strong>Gmail:</strong> Thanhtuan.ms1@gmail.com</p>
+            </div>
+            <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 0; margin-top: 20px; font-style: italic;">Hệ thống quản lý DJ&M 2026</p>
+        </div>
+    </div>
+
+    <!-- =================================================== -->
+    <!-- ĐOẠN 3A: KHỞI TẠO BIẾN & DANH SÁCH HÀNH CHÍNH      -->
+    <!-- =================================================== -->
+    <script>
+        // BIẾN TOÀN CỤC CHUNG CHO HỆ THỐNG
+        var today = new Date(), curY = today.getFullYear(), curM = today.getMonth() + 1, curD = today.getDate(), idEmp = null, isSun = {};
+        
+        // CẤU HÌNH THÁNG NĂM TRÊN THANH ĐIỀU KHIỂN HÀNH CHÍNH
+        var mSel = document.getElementById('m');
+        for (var i = 1; i <= 12; i++) {
+            var opt = document.createElement('option'); opt.value = i; opt.text = "T" + i;
+            if (i === curM) opt.selected = true; mSel.appendChild(opt);
+        }
+        document.getElementById('y').value = curY;
+
+        // TẢI DANH SÁCH ID NHÂN VIÊN HÀNH CHÍNH
+        var empList = JSON.parse(localStorage.getItem('emp-list-ids')) || [];
+        if(!localStorage.getItem('emp-list-ids')) localStorage.setItem('emp-list-ids', JSON.stringify(empList));
+
+        var deleteConfirmState = {};
+
+        // HIỂN THỊ DANH SÁCH NHÂN VIÊN TRANG CHỦ HÀNH CHÍNH
+        function renderHome() {
+            var html = ""; var selectedYear = parseInt(document.getElementById('y').value) || curY;
+            for(var i = 0; i < empList.length; i++) {
+                var id = empList[i]; var name = localStorage.getItem("n-" + id) || "Nhân viên " + id;
+                var isConfirming = deleteConfirmState[id] === true;
+                var btnText = isConfirming ? "Xác nhận?" : "❌"; var btnClass = isConfirming ? "btn-del confirm-state" : "btn-del";
+                var totalYearSalary = 0;
+                for (var m = 1; m <= 12; m++) { totalYearSalary += getQuickSalaryForMonth(id, m, selectedYear); }
+
+                html += "<div class='card'>" +
+                        "<input type='text' class='inp-name' value='" + name + "' oninput='saveNameChange(" + id + ", this.value)' onfocus='resetDelStates()' placeholder='Nhập tên...'>" +
+                        "<div class='card-right'>" +
+                        "<span class='card-salary' title='Tổng thu nhập năm " + selectedYear + "'>" + totalYearSalary.toLocaleString('vi-VN') + " đ</span>" +
+                        "<button class='btn-cc' onclick='goAtt(" + id + ")'>Chấm công</button>" +
+                        "<button class='" + btnClass + "' id='del-btn-" + id + "' onclick='delEmpStep(" + id + ", event)'>" + btnText + "</button>" +
+                        "</div></div>";
+            }
+            document.getElementById('gridBox').innerHTML = html || "<p style='text-align:center; width:100%; color:#999; padding-top:20px;'>Chưa có nhân viên nào, vui lòng bấm nút Thêm!</p>";
+        }
+
+        function saveNameChange(id, val) {
+            var cleanName = val.trim(); if (!cleanName) return;
+            localStorage.setItem("n-" + id, cleanName);
+        }
+
+        function goAtt(id) {
+            resetDelStates(); idEmp = id; var empName = localStorage.getItem("n-" + id) || ("Nhân viên " + id);
+            document.getElementById("curName").innerHTML = empName + " |";
+            document.getElementById('sal').value = localStorage.getItem("s-id-" + id) || "6000000";
+            document.getElementById('allow').value = localStorage.getItem("a-id-" + id) || "500000";
+            document.getElementById("home").style.display = "none"; document.getElementById("att").style.display = "block"; init(false);
+        }
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 3B: CÔNG THỨC & ĐIỀU KHIỂN BẢNG HÀNH CHÍNH     -->
+    <!-- =================================================== -->
+    <script>
+        // CÔNG THỨC LƯƠNG GỐC CHÍNH THỨC (PHÒNG VỆ CHỐNG TREO NÚT THÊM)
+        function getQuickSalaryForMonth(id, m, y) {
+            var saved = localStorage.getItem("att-id-" + id + "-" + m + "-" + y); if (!saved) return 0;
+            try {
+                var data = JSON.parse(saved), sal = parseFloat(localStorage.getItem("s-id-" + id)) || 6000000, allow = parseFloat(localStorage.getItem("a-id-" + id)) || 500000;
+                var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, hasData = false, totalDays = new Date(y, m, 0).getDate(), weekGroups = {};
+                for (var d = 1; d <= totalDays; d++) {
+                    var dayData = data[d]; var h = dayData ? (typeof dayData === 'object' ? dayData.hrs : dayData) : 0;
+                    if (h > 0) { hasData = true; var w = new Date(y, m - 1, d).getDay();
+                        if (w === 0) { tcn += h; } else {
+                            tc += h <= 8 ? Math.round((h / 8) * 100) / 100 : 1;
+                            if (h > 8) { var ot = h - 8; if (ot <= 4) tt1 += ot; else { tt1 += 4; tt2 += (ot - 4); } }
+                        }
+                        if (w !== 0) {
+                            if (h > 12) totalMeal += 12000;
+                            var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString();
+                            if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 });
+                        }
+                    }
+                }
+                if (!hasData) return 0;
+                for (var key in weekGroups) { var over6Count = 0, wData = weekGroups[key]; for (var j = 0; j < wData.length; j++) { if (wData[j] && wData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < wData.length; j++) { if (wData[j] && wData[j].ot > 6) totalMeal += 10000; } } }
+                tc = Math.round(tc * 100) / 100; var dp = sal / 26, hp = dp / 8, bh = sal * 0.105, cd = 37000;
+                return Math.round((tc * dp) + (tcn * hp * 2) + (tt1 * hp * 1.5) + (tt2 * hp * 1.85) + allow + totalMeal - bh - cd);
+            } catch(e) { return 0; }
+        }
+
+        function addEmp() { resetDelStates(); var nextId = empList.length > 0 ? Math.max.apply(null, empList) + 1 : 1; empList.push(nextId); localStorage.setItem('emp-list-ids', JSON.stringify(empList)); renderHome(); }
+        function delEmpStep(id, event) {
+            if(event) event.stopPropagation();
+            if (!deleteConfirmState[id]) { resetDelStates(); deleteConfirmState[id] = true; renderHome(); } else {
+                deleteConfirmState[id] = false; empList = empList.filter(function(item) { return item !== id; });
+                localStorage.setItem('emp-list-ids', JSON.stringify(empList)); localStorage.removeItem("n-" + id); localStorage.removeItem("s-id-" + id); localStorage.removeItem("a-id-" + id); renderHome();
+            }
+        }
+        function resetDelStates() { deleteConfirmState = {}; }
+        function back() { renderHome(); document.getElementById("att").style.display = "none"; document.getElementById("home").style.display = "block"; }
+
+        function init(isChan) {
+            var m = parseInt(document.getElementById('m').value), y = parseInt(document.getElementById('y').value), totalDays = new Date(y, m, 0).getDate(), tb = document.getElementById('tb'), sDay = document.getElementById('sDay');
+            tb.innerHTML = ''; sDay.innerHTML = ''; var saved = localStorage.getItem("att-id-" + idEmp + "-" + m + "-" + y), data = saved ? JSON.parse(saved) : {}; var days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+            for (var d = 1; d <= totalDays; d++) {
+                var w = new Date(y, m - 1, d).getDay(); isSun[d] = (w === 0); var opt = document.createElement('option'); opt.value = d; opt.text = "Ngày " + d; if (!isChan && d === curD && m === curM && y === curY) opt.selected = true; else if (isChan && d === 1) opt.selected = true; sDay.appendChild(opt);
+                var tr = document.createElement('tr'); tr.id = "r-" + d; if (w === 0) tr.className = 'sun';
+                tr.innerHTML = "<td>" + days[w] + "</td><td>" + d + "/" + m + "</td><td id='h-" + d + "'>0</td><td id='c-" + d + "'>0</td><td id='t1-" + d + "'>0</td><td id='t2-" + d + "'>0</td><td id='cn-" + d + "'>0</td><td id='n-" + d + "' class='col-note' style='color:#64748b; font-style:italic;'>-</td>"; tb.appendChild(tr); 
+                if (data[d]) { setRow(d, typeof data[d] === 'object' ? data[d].hrs : data[d], typeof data[d] === 'object' ? (data[d].note || '') : ''); }
+            }
+            document.getElementById('note').value = ''; calc(); setTimeout(fixTh, 100); setTimeout(scrollDay, 250);
+        }
+
+        function setRow(d, h, n) {
+            var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSun[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
+            document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
+        }
+
+        function update() {
+            var d = document.getElementById('sDay').value, h = parseFloat(document.getElementById('hrs').value) || 0, n = document.getElementById('note').value.trim(); setRow(d, h, n);
+            var m = document.getElementById('m').value, y = document.getElementById('y').value, storageKey = "att-id-" + idEmp + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data));
+            document.getElementById('note').value = ''; calc(); scrollDay();
+        }
+        
+        function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
+        
+        function calc() {
+            var m = parseInt(document.getElementById('m').value), y = parseInt(document.getElementById('y').value), totalDays = new Date(y, m, 0).getDate(), sal = parseFloat(document.getElementById('sal').value) || 0, allow = parseFloat(document.getElementById('allow').value) || 0;
+            var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, weekGroups = {}; 
+            for (var d = 1; d <= totalDays; d++) {
+                var h = parseFloat(document.getElementById('h-' + d).innerHTML) || 0; tc += parseFloat(document.getElementById('c-' + d).innerHTML) || 0; tcn += parseFloat(document.getElementById('cn-' + d).innerHTML) || 0; tt1 += parseFloat(document.getElementById('t1-' + d).innerHTML) || 0; tt2 += parseFloat(document.getElementById('t2-' + d).innerHTML) || 0;
+                if (h > 0 && !isSun[d]) { if (h > 12) totalMeal += 12000; var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString(); if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 }); }
+            }
+            for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) totalMeal += 10000; } } }
+            tc = Math.round(tc * 100) / 100; var dp = sal / 26, hp = dp / 8, bh = sal * 0.105, cd = 37000; var total = Math.round((tc * dp) + (tcn * hp * 2) + (tt1 * hp * 1.5) + (tt2 * hp * 1.85) + allow + totalMeal - bh - cd);
+            document.getElementById('out').innerHTML = "<span>Công: " + tc + " | TC1.5: " + tt1 + "h | TC1.85: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='red'>BH: -" + Math.round(bh).toLocaleString('vi-VN') + "đ | CĐ: -37k</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
+        }
+        
+        function scrollDay() {
+    var d = document.getElementById('sDay').value;
+    var target = document.getElementById('r-' + d);
+    if (target) {
+        // Tô màu xanh làm nổi bật dòng được chọn
+        document.querySelectorAll('#tb tr').forEach(function(r) { r.classList.remove('active-row'); }); 
+        target.classList.add('active-row');
+        
+        // Tính toán khoảng cách chính xác trừ đi thanh điều khiển cố định (Sticky) phía trên
+        var stickyHeight = document.getElementById('stTop').offsetHeight || 80;
+        var targetPosition = target.offsetTop + target.offsetParent.offsetTop;
+        
+        window.scrollTo({ 
+            top: targetPosition - stickyHeight - 10, 
+            behavior: 'smooth' 
+        });
+        
+        // Cập nhật nhanh nội dung ghi chú của ngày đó lên ô nhập liệu
+        var savedText = document.getElementById('n-' + d).innerHTML; 
+        document.getElementById('note').value = (savedText === '-') ? '' : savedText;
+    }
+}
+
+        function fixTh() { var h = document.getElementById('stTop').offsetHeight; document.querySelectorAll('#attendance-section th').forEach(function(th) { th.style.top = (h - 1) + 'px'; }); }
+        window.addEventListener('resize', fixTh); renderHome();
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 4A: QUẢN LÝ DANH SÁCH NHÂN VIÊN THỜI VỤ       -->
+    <!-- =================================================== -->
+    <script>
+        var todayTV = new Date(), curY_TV = todayTV.getFullYear(), curM_TV = todayTV.getMonth() + 1, curD_TV = todayTV.getDate(), idEmpTV = null, isSunTV = {};
+        
+        var mSelTV = document.getElementById('mTV');
+        for (var i = 1; i <= 12; i++) {
+            var opt = document.createElement('option'); opt.value = i; opt.text = "T" + i;
+            if (i === curM_TV) opt.selected = true; mSelTV.appendChild(opt);
+        }
+        document.getElementById('yTV').value = curY_TV;
+
+        var empListTV = JSON.parse(localStorage.getItem('emp-list-ids-tv')) || [];
+        if(!localStorage.getItem('emp-list-ids-tv')) localStorage.setItem('emp-list-ids-tv', JSON.stringify(empListTV));
+
+        var deleteConfirmStateTV = {};
+
+        function renderHomeTV() {
+            var html = ""; var selectedYear = parseInt(document.getElementById('yTV').value) || curY_TV;
+            for(var i = 0; i < empListTV.length; i++) {
+                var id = empListTV[i]; var name = localStorage.getItem("ntv-" + id) || "Nhân viên TV " + id;
+                var isConfirming = deleteConfirmStateTV[id] === true;
+                var btnText = isConfirming ? "Xác nhận?" : "❌"; var btnClass = isConfirming ? "btn-del confirm-state" : "btn-del";
+                var totalYearSalary = 0;
+                for (var m = 1; m <= 12; m++) { totalYearSalary += getQuickSalaryForMonthTV(id, m, selectedYear); }
+
+                html += "<div class='card'>" +
+                        "<input type='text' class='inp-name' value='" + name + "' oninput='saveNameChangeTV(" + id + ", this.value)' onfocus='resetDelStatesTV()' placeholder='Nhập tên...'>" +
+                        "<div class='card-right'>" +
+                        "<span class='card-salary' title='Tổng thu nhập năm " + selectedYear + "'>" + totalYearSalary.toLocaleString('vi-VN') + " đ</span>" +
+                        "<button class='btn-cc' onclick='goAttTV(" + id + ")'>Chấm công</button>" +
+                        "<button class='" + btnClass + "' id='del-btn-tv-" + id + "' onclick='delEmpStepTV(" + id + ", event)'>" + btnText + "</button>" +
+                        "</div></div>";
+            }
+            document.getElementById('gridBoxTV').innerHTML = html || "<p style='text-align:center; width:100%; color:#999; padding-top:20px;'>Chưa có nhân viên thời vụ nào, vui lòng bấm nút Thêm!</p>";
+        }
+
+        function saveNameChangeTV(id, val) { var cleanName = val.trim(); if (!cleanName) return; localStorage.setItem("ntv-" + id, cleanName); }
+
+        function goAttTV(id) {
+            resetDelStatesTV(); idEmpTV = id; var empName = localStorage.getItem("ntv-" + id) || ("Nhân viên TV " + id);
+            document.getElementById("curNameTV").innerHTML = empName + " |";
+            document.getElementById('salTV').value = localStorage.getItem("s-tv-" + id) || "6000000";
+            document.getElementById('allowTV').value = localStorage.getItem("a-tv-" + id) || "500000";
+            document.getElementById('pT1').value = localStorage.getItem("pt1-tv-" + id) || "50000";
+            document.getElementById('pT2').value = localStorage.getItem("pt2-tv-" + id) || "70000";
+            document.getElementById('pCN').value = localStorage.getItem("pcn-tv-" + id) || "100000";
+            document.getElementById("home-tv").style.display = "none"; document.getElementById("att-tv").style.display = "block"; initTV(false);
+        }
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 4B: CÔNG THỨC LƯƠNG & TIỀN ĂN THỜI VỤ          -->
+    <!-- =================================================== -->
+    <script>
+        // CÔNG THỨC LƯƠNG THỜI VỤ (BỔ SUNG TRY/CATCH PHÒNG VỆ CHỐNG SẬP NÚT THÊM)
+        function getQuickSalaryForMonthTV(id, m, y) {
+            var saved = localStorage.getItem("att-tv-" + id + "-" + m + "-" + y); if (!saved) return 0;
+            try {
+                var data = JSON.parse(saved), sal = parseFloat(localStorage.getItem("s-tv-" + id)) || 6000000, allow = parseFloat(localStorage.getItem("a-tv-" + id)) || 500000;
+                var t1_price = parseFloat(localStorage.getItem("pt1-tv-" + id)) || 50000, t2_price = parseFloat(localStorage.getItem("pt2-tv-" + id)) || 70000, cn_price = parseFloat(localStorage.getItem("pcn-tv-" + id)) || 100000;
+                var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, hasData = false, totalDays = new Date(y, m, 0).getDate(), weekGroups = {};
+                for (var d = 1; d <= totalDays; d++) {
+                    var dayData = data[d], h = dayData ? (typeof dayData === 'object' ? dayData.hrs : dayData) : 0;
+                    if (h > 0) { hasData = true; var w = new Date(y, m - 1, d).getDay();
+                        if (w === 0) { tcn += h; } else {
+                            tc += h <= 8 ? Math.round((h / 8) * 100) / 100 : 1;
+                            if (h > 8) { var ot = h - 8; if (ot <= 4) tt1 += ot; else { tt1 += 4; tt2 += (ot - 4); } }
+                        }
+                        if (w !== 0) {
+                            if (h > 12) totalMeal += 12000;
+                            var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString();
+                            if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 });
+                        }
+                    }
+                }
+                if (!hasData) return 0;
+                for (var key in weekGroups) { var over6Count = 0, wData = weekGroups[key]; for (var j = 0; j < wData.length; j++) { if (wData[j] && wData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < wData.length; j++) { if (wData[j] && wData[j].ot > 6) totalMeal += 10000; } } }
+                tc = Math.round(tc * 100) / 100; var dp = sal / 26; return Math.round((tc * dp) + (tt1 * t1_price) + (tt2 * t2_price) + (tcn * cn_price) + allow + totalMeal);
+            } catch(e) { return 0; }
+        }
+
+        function addEmpTV() { resetDelStatesTV(); var nextId = empListTV.length > 0 ? Math.max.apply(null, empListTV) + 1 : 1; empListTV.push(nextId); localStorage.setItem('emp-list-ids-tv', JSON.stringify(empListTV)); renderHomeTV(); }
+        function delEmpStepTV(id, event) {
+            if(event) event.stopPropagation();
+            if (!deleteConfirmStateTV[id]) { resetDelStatesTV(); deleteConfirmStateTV[id] = true; renderHomeTV(); } else {
+                deleteConfirmStateTV[id] = false; empListTV = empListTV.filter(function(item) { return item !== id; });
+                localStorage.setItem('emp-list-ids-tv', JSON.stringify(empListTV)); localStorage.removeItem("ntv-" + id); localStorage.removeItem("s-tv-" + id); localStorage.removeItem("pt1-tv-" + id); localStorage.removeItem("pt2-tv-" + id); localStorage.removeItem("pcn-tv-" + id); renderHomeTV();
+            }
+        }
+        function resetDelStatesTV() { deleteConfirmStateTV = {}; }
+        function backTV() { renderHomeTV(); document.getElementById("att-tv").style.display = "none"; document.getElementById("home-tv").style.display = "block"; }
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 4C: ĐIỀU KHIỂN Ô NGÀY & TÍNH TOÁN THỜI VỤ     -->
+    <!-- =================================================== -->
+    <script>
+        function initTV(isChan) {
+            var m = parseInt(document.getElementById('mTV').value);
+            var y = parseInt(document.getElementById('yTV').value);
+            var totalDays = new Date(y, m, 0).getDate(), tb = document.getElementById('tbTV'), sDay = document.getElementById('sDayTV');
+            tb.innerHTML = ''; sDay.innerHTML = ''; 
+            var storageKey = "att-tv-" + idEmpTV + "-" + m + "-" + y, saved = localStorage.getItem(storageKey), data = saved ? JSON.parse(saved) : {}; 
+            var days = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+            for (var d = 1; d <= totalDays; d++) {
+                var w = new Date(y, m - 1, d).getDay(); isSunTV[d] = (w === 0); var opt = document.createElement('option'); opt.value = d; opt.text = "Ngày " + d; if (!isChan && d === curD_TV && m === curM_TV && y === curY_TV) opt.selected = true; else if (isChan && d === 1) opt.selected = true; sDay.appendChild(opt);
+                var tr = document.createElement('tr'); tr.id = "rtv-" + d; if (w === 0) tr.className = 'sun';
+                tr.innerHTML = "<td>" + days[w] + "</td><td>" + d + "/" + m + "</td><td id='htv-" + d + "'>0</td><td id='ctv-" + d + "'>0</td><td id='t1tv-" + d + "'>0</td><td id='t2tv-" + d + "'>0</td><td id='cntv-" + d + "'>0</td><td id='ntv-" + d + "' class='col-note' style='color:#64748b; font-style:italic;'>-</td>"; tb.appendChild(tr); 
+                if (data[d]) { setRowTV(d, typeof data[d] === 'object' ? data[d].hrs : data[d], typeof data[d] === 'object' ? (data[d].note || '') : ''); }
+            }
+            document.getElementById('noteTV').value = ''; calcTV(); setTimeout(fixThTV, 100); setTimeout(scrollDayTV, 250);
+        }
+
+        function setRowTV(d, h, n) {
+            var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSunTV[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
+            document.getElementById('htv-' + d).innerHTML = h; document.getElementById('ctv-' + d).innerHTML = c; document.getElementById('t1tv-' + d).innerHTML = t1; document.getElementById('t2tv-' + d).innerHTML = t2; document.getElementById('cntv-' + d).innerHTML = cn; document.getElementById('ntv-' + d).innerHTML = n ? n : "-";
+        }
+
+        function updateTV() {
+            var d = document.getElementById('sDayTV').value, h = parseFloat(document.getElementById('hrsTV').value) || 0, n = document.getElementById('noteTV').value.trim(); setRowTV(d, h, n);
+            var m = document.getElementById('mTV').value, y = document.getElementById('yTV').value, storageKey = "att-tv-" + idEmpTV + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data));
+            document.getElementById('noteTV').value = ''; calcTV(); scrollDayTV();
+        }
+        
+        function saveCfgTV() { localStorage.setItem("s-tv-" + idEmpTV, document.getElementById('salTV').value); localStorage.setItem("a-tv-" + idEmpTV, document.getElementById('allowTV').value); localStorage.setItem("pt1-tv-" + idEmpTV, document.getElementById('pT1').value); localStorage.setItem("pt2-tv-" + idEmpTV, document.getElementById('pT2').value); localStorage.setItem("pcn-tv-" + idEmpTV, document.getElementById('pCN').value); calcTV(); setTimeout(fixThTV, 50); }
+        
+        function calcTV() {
+            var m = parseInt(document.getElementById('mTV').value), y = parseInt(document.getElementById('yTV').value), totalDays = new Date(y, m, 0).getDate(), sal = parseFloat(document.getElementById('salTV').value) || 0, allow = parseFloat(document.getElementById('allowTV').value) || 0, t1_price = parseFloat(document.getElementById('pT1').value) || 0, t2_price = parseFloat(document.getElementById('pT2').value) || 0, cn_price = parseFloat(document.getElementById('pCN').value) || 0;
+            var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, weekGroups = {}; 
+            for (var d = 1; d <= totalDays; d++) {
+                var h = parseFloat(document.getElementById('htv-' + d).innerHTML) || 0; tc += parseFloat(document.getElementById('ctv-' + d).innerHTML) || 0; tcn += parseFloat(document.getElementById('cntv-' + d).innerHTML) || 0; tt1 += parseFloat(document.getElementById('t1tv-' + d).innerHTML) || 0; tt2 += parseFloat(document.getElementById('t2tv-' + d).innerHTML) || 0;
+                if (h > 0 && !isSunTV[d]) { if (h > 12) totalMeal += 12000; var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString(); if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 }); }
+            }
+            for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) totalMeal += 10000; } } }
+            tc = Math.round(tc * 100) / 100; var dp = sal / 26; var total = Math.round((tc * dp) + (tt1 * t1_price) + (tt2 * t2_price) + (tcn * cn_price) + allow + totalMeal);
+            document.getElementById('outTV').innerHTML = "<span>Công: " + tc + " | TCT: " + tt1 + "h | TCĐ: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
+        }
+        
+        function scrollDayTV() {
+    var d = document.getElementById('sDayTV').value;
+    var target = document.getElementById('rtv-' + d);
+    if (target) {
+        // Tô màu xanh làm nổi bật dòng được chọn
+        document.querySelectorAll('#tbTV tr').forEach(function(r) { r.classList.remove('active-row'); }); 
+        target.classList.add('active-row');
+        
+        // Tính toán khoảng cách chính xác dựa trên tọa độ offset của dòng trong bảng
+        var stickyHeight = document.getElementById('stTopTV').offsetHeight || 80;
+        var targetPosition = target.offsetTop + target.offsetParent.offsetTop;
+        
+        window.scrollTo({ 
+            top: targetPosition - stickyHeight - 10, 
+            behavior: 'smooth' 
+        });
+        
+        // Cập nhật nhanh nội dung ghi chú của ngày đó lên ô nhập liệu thời vụ
+        var savedText = document.getElementById('ntv-' + d).innerHTML; 
+        document.getElementById('noteTV').value = (savedText === '-') ? '' : savedText;
+    }
+}
+
+        function fixThTV() { var h = document.getElementById('stTopTV').offsetHeight; document.querySelectorAll('#seasonal-section th').forEach(function(th) { th.style.top = (h - 1) + 'px'; }); }
+        renderHomeTV();
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 5A: LOGIC JAVASCRIPT TRANG KIỂM KÊ KHO         -->
+    <!-- =================================================== -->
+    <script>
+        let currentActiveTab = 'tabPaper'; let isConfirmingDelete = false;
+        function resetClearButton() { const btnClear = document.getElementById('btnClearHistory'); if (btnClear) { isConfirmingDelete = false; btnClear.innerText = "XÓA HẾT"; btnClear.classList.remove('confirm-state'); } }
+        function openTab(evt, tabName) {
+            currentActiveTab = tabName; var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("kk-tab-content"); for (i = 0; i < tabcontent.length; i++) tabcontent[i].classList.remove("active");
+            tablinks = document.getElementsByClassName("kk-tab-btn"); for (i = 0; i < tablinks.length; i++) tablinks[i].classList.remove("active");
+            document.getElementById(tabName).classList.add("active"); if(evt) evt.currentTarget.classList.add("active");
+            document.getElementById('resPaper').style.display = 'none'; document.getElementById('resSeal').style.display = 'none'; document.getElementById('historySection').style.display = 'none'; resetClearButton();
+        }
+        function getFormatedTime() { const now = new Date(); return now.toTimeString().split(' ')[0]; }
+        function luuLichSu(tabKey, dataObj) {
+            let lichSuToanBo = JSON.parse(localStorage.getItem('lichSuTinhTon')) || { tabPaper: [], tabSeal: [] };
+            if (!lichSuToanBo[tabKey]) lichSuToanBo[tabKey] = []; lichSuToanBo[tabKey].unshift(dataObj); localStorage.setItem('lichSuTinhTon', JSON.stringify(lichSuToanBo));
+            if(document.getElementById('historySection').style.display === 'block') { xemLichSu(tabKey); }
+        }
+        function tinhGiay() {
+            const D = parseFloat(document.getElementById('D_full').value), d = parseFloat(document.getElementById('d_core').value), Dx = parseFloat(document.getElementById('D_current').value), N = parseFloat(document.getElementById('N_total').value), res = document.getElementById('resPaper'); res.style.display = "block";
+            if (isNaN(D) || isNaN(d) || isNaN(Dx) || isNaN(N)) { showKK(res, "Nhập thiếu số liệu!", false); return; }
+            if (d >= D || Dx > D || d >= Dx) { showKK(res, "Số liệu không hợp lý!", false); return; }
+            const kq = N * (Math.pow(Dx, 2) - Math.pow(d, 2)) / (Math.pow(D, 2) - Math.pow(d, 2)), finalKq = Math.round(kq); showKK(res, "Có khoảng: " + finalKq.toLocaleString() + " EA", true);
+            luuLichSu('tabPaper', { time: getFormatedTime(), inputs: `Lõi:${d} | Đầy:${D} | Còn:${Dx} | Tổng:${N}`, result: finalKq.toLocaleString() + " EA" });
+        }
+        function tinhSeal() {
+            const sc = parseFloat(document.getElementById('S_sample_count').value), sw = parseFloat(document.getElementById('S_sample_weight').value), tw = parseFloat(document.getElementById('S_total_weight').value), res = document.getElementById('resSeal'); res.style.display = "block";
+            if (!sc || !sw || !tw) { showKK(res, "Nhập thiếu số liệu!", false); return; }
+            const kq = (tw / sw) * sc, finalKq = Math.round(kq); showKK(res, "Có khoảng: " + finalKq.toLocaleString() + " EA", true);
+            luuLichSu('tabSeal', { time: getFormatedTime(), inputs: `Mẫu:${sc} EA | KL Mẫu:${sw}g | Tổng KL:${tw}g`, result: finalKq.toLocaleString() + " EA" });
+        }
+        function showKK(el, msg, ok) { el.innerText = msg; el.className = "kk-result-box " + (ok ? "kk-success" : "kk-error"); }
+        function xemLichSu(tabKey) {
+            currentActiveTab = tabKey; const historySection = document.getElementById('historySection'), historyTitle = document.getElementById('historyTitle'), container = document.getElementById('historyTableContainer');
+            historyTitle.innerText = tabKey === 'tabPaper' ? "Lịch sử tồn TM'L" : "Lịch sử số lượng Seal"; historySection.style.display = "block"; resetClearButton();
+            let lichSuToanBo = JSON.parse(localStorage.getItem('lichSuTinhTon')) || { tabPaper: [], tabSeal: [] }, dataTab = lichSuToanBo[tabKey] || [];
+            if(dataTab.length === 0) { container.innerHTML = "<p style='text-align:center; padding:15px; color:#888;'>Chưa có dữ liệu lịch sử tính toán nào.</p>"; return; }
+            let html = `<table class="kk-table"><thead><tr><th style="width:50px">STT</th><th style="width:90px">Thời gian</th><th>${tabKey === 'tabPaper' ? "Thông số cuộn (mm)" : "Thông số cân đo"}</th><th style="width:110px">Kết quả</th></tr></thead><tbody>`;
+            dataTab.forEach((item, index) => { html += `<tr><td>${index + 1}</td><td>${item.time}</td><td>${item.inputs}</td><td class="kk-text-res">${item.result}</td></tr>`; });
+            html += `</tbody></table>`; container.innerHTML = html; historySection.scrollIntoView({ behavior: 'smooth' });
+        }
+        function xoaLichSuCurrentTab() {
+            const btnClear = document.getElementById('btnClearHistory');
+            if (!isConfirmingDelete) { isConfirmingDelete = true; btnClear.innerText = "XÁC NHẬN?"; btnClear.classList.add('confirm-state'); } else {
+                let lichSuToanBo = JSON.parse(localStorage.getItem('lichSuTinhTon')) || { tabPaper: [], tabSeal: [] }; lichSuToanBo[currentActiveTab] = []; localStorage.setItem('lichSuTinhTon', JSON.stringify(lichSuToanBo)); xemLichSu(currentActiveTab);
+            }
+        }
+    </script>
+    <!-- =================================================== -->
+    <!-- ĐOẠN 5B: THUẬT TOÁN LỊCH ÂM, KỶ NIỆM & ĐIỀU HƯỚNG TỔNG -->
+    <!-- =================================================== -->
+    <script>
+        var calViewDate = new Date(); 
+        var deleteConfirmStateKN = {};
+
+        function getAmLich(d, m, y) {
+            var baseDate = new Date(2020, 0, 25); var currDate = new Date(y, m - 1, d);
+            var diffDays = Math.floor((currDate - baseDate) / (24 * 60 * 60 * 1000)); if (diffDays < 0) return {aDay: ""};
+            var totalLunis = diffDays / 29.5306; var currentM = Math.floor(totalLunis) % 12 + 1; var currentD = Math.floor((totalLunis - Math.floor(totalLunis)) * 29.5306) + 1;
+            if (currentD > 30) { currentD = 1; currentM = (currentM % 12) + 1; } return currentD === 1 ? {aDay: "1/" + currentM} : {aDay: currentD};
+        }
+
+        function initCalendar() {
+            var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
+            var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), body = document.getElementById('calendarBody'); body.innerHTML = "";
+            var date = 1; var today = new Date();
+            for (var i = 0; i < 6; i++) {
+                var row = document.createElement('tr'); var hasCells = false;
+                for (var j = 0; j < 7; j++) {
+                    var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
+                    if (i === 0 && j < firstDay) { cell.innerHTML = ""; } else if (date > daysInMonth) { cell.innerHTML = ""; } else {
+                        hasCells = true; var al = getAmLich(date, month + 1, year); var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
+                        if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; }
+                        cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${al.aDay}</div>`; date++;
+                    }
+                    row.appendChild(cell);
+                }
+                if (!hasCells) break; body.appendChild(row);
+            }
+            renderKyNiem();
+        }
+
+        function changeMonth(dir) { calViewDate.setMonth(calViewDate.getMonth() + dir); initCalendar(); }
+        function goTodayCalendar() { calViewDate = new Date(); initCalendar(); }
+        
+        function addKyNiem() {
+            var title = document.getElementById('knTitle').value.trim(), dateStr = document.getElementById('knDate').value; if (!title || !dateStr) { alert("Vui lòng điền đủ tên và ngày!"); return; }
+            var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.push({ title: title, date: dateStr }); localStorage.setItem('djm-kyniem', JSON.stringify(list));
+            document.getElementById('knTitle').value = ""; document.getElementById('knDate').value = ""; renderKyNiem();
+        }
+
+        function renderKyNiem() {
+            var list = JSON.parse(localStorage.getItem('djm-kyniem')) || [], container = document.getElementById('kyNiemList'); container.innerHTML = "";
+            if (list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin:10px 0; font-size:13px;'>Chưa có ngày kỷ niệm nào được lưu.</p>"; return; }
+            var today = new Date(); today.setHours(0,0,0,0);
+            list.forEach(function(item, index) {
+                var knDate = new Date(item.date); knDate.setHours(0,0,0,0); var diffDays = Math.floor((today - knDate) / (1000 * 60 * 60 * 24)); var dayText = diffDays < 0 ? `Còn ${Math.abs(diffDays)} ngày nữa là đến` : (diffDays === 0 ? "Chính là ngày hôm nay! 🎉" : `Đã qua: <b style="color:#d946ef; font-size:14px;">${diffDays.toLocaleString()}</b> ngày`);
+                var isConfirming = deleteConfirmStateKN[index] === true, btnText = isConfirming ? "XÁC NHẬN?" : "Xóa", btnStyle = isConfirming ? "background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; font-size:11px; color:#ef4444; font-weight:bold; cursor:pointer; width:auto; padding:4px 6px;" : "background:none; border:none; color:#ef4444; font-size:13px; font-weight:bold; cursor:pointer; width:auto; padding:5px;";
+                var card = document.createElement('div'); card.style.cssText = "display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:8px; align-items:center; box-sizing:border-box; width:100%;";
+                card.innerHTML = `<div style="text-align:left;"><div style="font-weight:bold; color:#334155; font-size:13px;">${item.title}</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Ngày: ${item.date.split('-').reverse().join('/')} (${dayText})</div></div><button onclick="deleteKyNiem(${index})" style="${btnStyle}">${btnText}</button>`;
+                container.appendChild(card);
+            });
+        }
+
+        function deleteKyNiem(index) {
+            if (!deleteConfirmStateKN[index]) { deleteConfirmStateKN = {}; deleteConfirmStateKN[index] = true; renderKyNiem(); } else {
+                deleteConfirmStateKN[index] = false; var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.splice(index, 1); localStorage.setItem('djm-kyniem', JSON.stringify(list)); renderKyNiem();
+            }
+        }
+
+                // HÀM KÍCH HOẠT MÀN HÌNH BÍ MẬT KHI NHẤN 2 LẦN NHANH
+        function showContactSecret() {
+            switchScreen('contact-secret-section');
+        }
+
+        // HÀM ĐIỀU HƯỚNG TỔNG (ĐÃ CẬP NHẬT ẨN HIỆN CHO TRANG BÍ MẬT)
+        function switchScreen(sectionId) {
+            document.querySelectorAll('.app-section').forEach(function(section) { section.classList.remove('active'); });
+            document.getElementById(sectionId).classList.add('active');
+            deleteConfirmStateKN = {}; // Reset bộ đếm kỷ niệm
+            
+            // Chỉ hiện chữ "Chỉ tính lương DJ&M" ở Trang chủ, Hành chính và Thời vụ
+            if (sectionId === 'main-dashboard' || sectionId === 'attendance-section' || sectionId === 'seasonal-section') { 
+                document.getElementById("cpLabel").style.display = "block"; 
+            } else { 
+                document.getElementById("cpLabel").style.display = "none"; 
+            }
+            if (sectionId === 'main-dashboard') { if (typeof back === 'function') back(); if (typeof backTV === 'function') backTV(); }
+        }
+
+        // ===================================================
+        // LOGIC XỬ LÝ CHỨC NĂNG QUẢN LÝ CHI TIÊU THU CHI
+        // ===================================================
+        var deleteConfirmStateEX = {}; // Biến lưu trạng thái chờ xóa thu chi
+
+        // Tự động gán ô nhập ngày bằng ngày hôm nay khi trang vừa tải xong
+        function setExpenseDefaultDate() {
+            var now = new Date();
+            var y = now.getFullYear();
+            var m = String(now.getMonth() + 1).padStart(2, '0');
+            var d = String(now.getDate()).padStart(2, '0');
+            var el = document.getElementById('exDate');
+            if (el) el.value = `${y}-${m}-${d}`;
+        }
+
+        function addExpenseItem() {
+            var dStr = document.getElementById('exDate').value;
+            var type = document.getElementById('exType').value;
+            var reason = document.getElementById('exReason').value.trim();
+            var amount = parseFloat(document.getElementById('exAmount').value) || 0;
+
+            if (!dStr || !reason || amount <= 0) { alert("Vui lòng điền đủ ngày, nội dung và số tiền hợp lệ!"); return; }
+
+            var list = JSON.parse(localStorage.getItem('djm-expense-list')) || [];
+            list.unshift({ date: dStr, type: type, reason: reason, amount: amount });
+            localStorage.setItem('djm-expense-list', JSON.stringify(list));
+
+            // Đặt lại ô nhập liệu về trạng thái trống
+            document.getElementById('exReason').value = "";
+            document.getElementById('exAmount').value = "";
+            setExpenseDefaultDate();
+            renderExpenseHistory();
+        }
+
+        function renderExpenseHistory() {
+            var list = JSON.parse(localStorage.getItem('djm-expense-list')) || [];
+            var body = document.getElementById('expenseHistoryBody');
+            body.innerHTML = "";
+
+            var totalThu = 0, totalChi = 0;
+
+            if (list.length === 0) {
+                body.innerHTML = "<tr><td colspan='5' style='color:#999; padding:20px 0;'>Chưa có giao dịch thu chi nào được lưu.</td></tr>";
+                document.getElementById('totalThuBox').innerText = "0 đ";
+                document.getElementById('totalChiBox').innerText = "0 đ";
+                document.getElementById('gapBox').innerText = "0 đ";
+                setExpenseDefaultDate();
+                return;
+            }
+
+            list.forEach(function(item, index) {
+                // Cộng dồn tính toán tổng tiền
+                if (item.type === 'thu') totalThu += item.amount;
+                else totalChi += item.amount;
+
+                var typeBadge = item.type === 'thu' ? '<span style="color:#28a745; font-weight:bold;">THU</span>' : '<span style="color:#dc3545; font-weight:bold;">CHI</span>';
+                var amountColor = item.type === 'thu' ? 'color:#28a745;' : 'color:#dc3545;';
+                var formattedDate = item.date.split('-').reverse().slice(0,2).join('/'); // Định dạng hiển thị Ngày/Tháng ngắn gọn
+
+                // Xử lý chốt khóa bảo vệ xóa 2 bước
+                var isConfirming = deleteConfirmStateEX[index] === true;
+                var btnText = isConfirming ? "XÁC NHẬN?" : "Xóa";
+                var btnStyle = isConfirming ? "background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; font-size:10px; color:#ef4444; font-weight:bold; cursor:pointer; width:auto; padding:4px 5px;" : "background:none; border:none; color:#ef4444; font-size:12px; font-weight:bold; cursor:pointer; width:auto; padding:4px;";
+
+                var tr = document.createElement('tr');
+                tr.innerHTML = `<td style="padding:10px 4px; color:#555;">${formattedDate}</td>
+                                <td style="padding:10px 4px;">${typeBadge}</td>
+                                <td style="padding:10px 4px; text-align:left; font-size:13px;">${item.reason}</td>
+                                <td style="padding:10px 4px; text-align:right; font-weight:bold; ${amountColor}">${item.amount.toLocaleString('vi-VN')} đ</td>
+                                <td style="padding:10px 4px;"><button onclick="deleteExpenseItem(${index})" style="${btnStyle}">${btnText}</button></td>`;
+                body.appendChild(tr);
+            });
+
+            // Cập nhật các ô thống kê dòng tiền
+            var gap = totalThu - totalChi;
+            document.getElementById('totalThuBox').innerText = totalThu.toLocaleString('vi-VN') + " đ";
+            document.getElementById('totalChiBox').innerText = totalChi.toLocaleString('vi-VN') + " đ";
+            document.getElementById('gapBox').innerText = gap.toLocaleString('vi-VN') + " đ";
+            document.getElementById('gapBox').style.color = gap >= 0 ? '#1e8e3e' : '#d93025';
+            
+            setExpenseDefaultDate();
+        }
+
+        function deleteExpenseItem(index) {
+            if (!deleteConfirmStateEX[index]) {
+                deleteConfirmStateEX = {}; // Reset tất cả các ô khác để tránh kẹt
+                deleteConfirmStateEX[index] = true;
+                renderExpenseHistory();
+            } else {
+                deleteConfirmStateEX[index] = false;
+                var list = JSON.parse(localStorage.getItem('djm-expense-list')) || [];
+                list.splice(index, 1);
+                localStorage.setItem('djm-expense-list', JSON.stringify(list));
+                renderExpenseHistory();
+            }
+        }
+
+        // Kích hoạt ngầm tự động xóa trạng thái Xác nhận của thu chi khi chuyển trang
+        var originalSwitchScreen = switchScreen;
+        switchScreen = function(sectionId) {
+            deleteConfirmStateEX = {}; // Reset bộ khóa thu chi
+            if (sectionId === 'expense-section') { renderExpenseHistory(); }
+            if (typeof originalSwitchScreen === 'function') originalSwitchScreen(sectionId);
+        };
+
+        // ===================================================
+        // LOGIC KIỂM TRA MẬT KHẨU BẢO MẬT TRANG KIỂM KÊ
+        // ===================================================
+        function checkInventoryPin() {
+            var inputPin = document.getElementById('pinInput').value;
+            
+            // So khớp với mật khẩu cố định 0109
+            if (inputPin === "0109") {
+                document.getElementById('pinInput').value = ""; // Xóa chữ trống trong ô nhập
+                switchScreen('inventory-section'); // Cho phép vượt qua màn hình khóa để vào trang kiểm kê
+            } else {
+                alert("Mật khẩu không chính xác! Vui lòng thử lại.");
+                document.getElementById('pinInput').value = "";
+                document.getElementById('pinInput').focus();
+            }
+        }
+
+        // Hỗ trợ bắt sự kiện người dùng ấn nút Enter trên bàn phím để kích hoạt xác nhận nhanh
+        var pinInpEl = document.getElementById('pinInput');
+        if(pinInpEl) {
+            pinInpEl.addEventListener("keyup", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    checkInventoryPin();
+                }
+            });
+        }
+
+
+    </script>
+</body>
+</html>
