@@ -92,6 +92,24 @@
                     <span class="db-icon">🔍</span>
                     <span class="db-title">Kiểm Kê Tồn Kho</span>
                 </div>
+	<!-- KHU VỰC NÚT SAO LƯU & KHÔI PHỤC DỮ LIỆU -->
+	<div style="margin: 20px auto; max-width: 600px; padding: 15px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 10px; text-align: center;">
+ 	   <h4 style="margin-top: 0; color: #334155; margin-bottom: 10px;">💾 Backup</h4>
+    
+   	 <!-- Nút Xuất file dự phòng -->
+   	 <button onclick="exportBackupData()" style="padding: 8px 15px; background-color: #0ea5e9; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; margin-right: 10px;">
+	  Sao Lưu  
+  	  </button>
+    
+   	 <!-- Nút Chọn file để phục hồi -->
+   	 <button onclick="document.getElementById('importFile').click()" style="padding: 8px 15px; background-color: #10b981; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+	Khôi Phục
+  	  </button>
+    
+  	  <!-- Thẻ ẩn để phục vụ việc chọn file -->
+  	  <input type="file" id="importFile" accept=".json" onchange="importBackupData(event)" style="display: none;">
+	</div>
+
 
 
             </div>
@@ -911,6 +929,58 @@
                 }
             });
         }
+// HÀM XUẤT FILE SAO LƯU (.JSON)
+function exportBackupData() {
+    try {
+        // Gom toàn bộ bộ nhớ LocalStorage thành một đối tượng chuỗi
+        const dataStr = JSON.stringify(localStorage);
+        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        
+        // Tạo tên file kèm theo ngày tháng hiện tại để dễ quản lý
+        const exportFileDefaultName = 'DJM_Backup_' + new Date().toISOString().slice(0,10) + '.json';
+        
+        // Tạo liên kết ẩn để kích hoạt tải file về máy
+        const linkElement = document.createElement('a');
+        linkElement.setAttribute('href', dataUri);
+        linkElement.setAttribute('download', exportFileDefaultName);
+        linkElement.click();
+    } catch (e) {
+        alert("Có lỗi xảy ra khi sao lưu: " + e.message);
+    }
+}
+
+// HÀM ĐỌC FILE VÀ KHÔI PHỤC DỮ LIỆU
+function importBackupData(event) {
+    const input = event.target;
+    const reader = new FileReader();
+    
+    reader.onload = function() {
+        try {
+            const backupData = JSON.parse(reader.result);
+            
+            // Xác nhận trước khi ghi đè dữ liệu cũ
+            if (confirm("Hành động này sẽ ghi đè toàn bộ dữ liệu hiện tại trên trình duyệt bằng dữ liệu trong file backup. Bạn có chắc chắn muốn tiếp tục?")) {
+                localStorage.clear(); // Xóa sạch dữ liệu cũ hiện tại
+                
+                // Đổ dữ liệu từ file backup vào lại LocalStorage
+                for (const key in backupData) {
+                    localStorage.setItem(key, backupData[key]);
+                }
+                
+                alert("Khôi phục dữ liệu thành công! Trang web sẽ tự nạp lại.");
+                location.reload(); // Tải lại trang (F5) để hiển thị dữ liệu mới
+            }
+        } catch (e) {
+            alert("File không đúng định dạng backup hoặc bị lỗi: " + e.message);
+        }
+        input.value = ''; // Reset lại ô chọn file
+    };
+    
+    if (input.files && input.files[0]) {
+        reader.readAsText(input.files[0]);
+    }
+}
+
 
 
     </script>
