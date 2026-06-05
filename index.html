@@ -250,67 +250,51 @@
         </div>
     </div>
 
-       <!-- =================================================== -->
-    <!-- THAY THẾ TOÀN BỘ KHỐI TRANG QUẢN LÝ CHI TIÊU BẰNG ĐOẠN NÀY -->
-    <!-- =================================================== -->
     <!-- TRANG QUẢN LÝ CHI TIÊU -->
     <div id="expense-section" class="app-section">
         <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
             <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button>
         </div>
         <div class="kk-container" style="max-width: 550px;">
-            <!-- Tiêu đề đã được cấu hình canh giữa tự động -->
-            <h2 style="margin: 0 0 15px 0; color: #1e293b; text-align: center; font-size: 22px;">Quản Lý Thu Chi</h2>
+            <h2 style="margin-bottom:15px; color:#1e293b;">Quản Lý Thu Chi Cá Nhân</h2>
             
-            <!-- Biểu mẫu nhập liệu: Các ô nhập đã đồng bộ kích thước 100% bằng nhau và ô ngày canh trái -->
-            <div class="kk-input-group">
-                <label>Ngày thực hiện</label>
-                <input type="date" id="exDate" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; text-align: left; box-sizing: border-box;">
-            </div>
+            <!-- Biểu mẫu nhập liệu -->
+            <div class="kk-input-group"><label>Ngày thực hiện</label><input type="date" id="exDate"></div>
             <div class="kk-input-group">
                 <label>Loại giao dịch</label>
-                <select id="exType" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
-                    <option value="thu">📈 THU VÀO </option>
-                    <option value="chi">📉 CHI RA </option>
+                <select id="exType" style="width:100%; padding:12px; border:1px solid #ddd; border-radius:10px; font-size:16px; background:#fafafa;">
+                    <option value="thu">📈 THU (Số tiền nhận vào)</option>
+                    <option value="chi">📉 CHI (Số tiền chi ra)</option>
                 </select>
             </div>
-            <div class="kk-input-group">
-                <label>Nội dung / Lý do</label>
-                <input type="text" id="exReason" placeholder="Ví dụ: Nhận lương, Mua quà ..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
-            </div>
-            <div class="kk-input-group">
-                <label>Số tiền (VND)</label>
-                <input type="number" id="exAmount" inputmode="numeric" placeholder="Nhập số tiền" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 16px; background: #fafafa; box-sizing: border-box;">
-            </div>
+            <div class="kk-input-group"><label>Nội dung / Lý do</label><input type="text" id="exReason" placeholder="Ví dụ: Nhận lương, mua hàng..."></div>
+            <div class="kk-input-group"><label>Số tiền (VND)</label><input type="number" id="exAmount" inputmode="numeric" placeholder="Nhập số tiền"></div>
             
-            <button class="kk-btn" style="width: 100%; margin-top: 5px; margin-bottom: 20px;" onclick="addExpenseItem()">GHI SỔ</button>
+            <button class="kk-btn" style="width:100%; margin-top:5px; margin-bottom:20px;" onclick="addExpenseItem()">LƯU SỔ</button>
 
             <!-- Khối thống kê cân đối tài chính (Gap) -->
-            <div style="display: flex; justify-content: space-between; gap: 8px; margin-bottom: 20px; font-weight: bold; font-size: 12px;">
-                <div style="flex: 1; background: #e6f4ea; color: #1e8e3e; padding: 10px; border-radius: 8px; border: 1px solid #34a853; text-align: center;">Tổng Thu:<br><span id="totalThuBox" style="font-size: 14px;">0 đ</span></div>
-                <div style="flex: 1; background: #fce8e6; color: #d93025; padding: 10px; border-radius: 8px; border: 1px solid #ea4335; text-align: center;">Tổng Chi:<br><span id="totalChiBox" style="font-size: 14px;">0 đ</span></div>
-                <div style="flex: 1; background: #e8f0fe; color: #1a73e8; padding: 10px; border-radius: 8px; border: 1px solid #1a73e8; text-align: center;">Số Dư (Gap):<br><span id="gapBox" style="font-size: 14px;">0 đ</span></div>
+            <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:20px; font-weight:bold; font-size:12px;">
+                <div style="flex:1; background:#e6f4ea; color:#1e8e3e; padding:10px; border-radius:8px; border:1px solid #34a853;">Tổng Thu:<br><span id="totalThuBox" style="font-size:14px;">0 đ</span></div>
+                <div style="flex:1; background:#fce8e6; color:#d93025; padding:10px; border-radius:8px; border:1px solid #ea4335;">Tổng Chi:<br><span id="totalChiBox" style="font-size:14px;">0 đ</span></div>
+                <div style="flex:1; background:#e8f0fe; color:#1a73e8; padding:10px; border-radius:8px; border:1px solid #1a73e8;">Số Dư (Gap):<br><span id="gapBox" style="font-size:14px;">0 đ</span></div>
             </div>
 
             <!-- Bảng lịch sử dòng tiền -->
-            <h3 style="margin: 15px 0 8px 0; font-size: 14px; color: #475569; text-transform: uppercase; text-align: left;">Lịch sử giao dịch</h3>
-            <!-- THAY THẾ CỤM TABLE LỊCH SỬ THU CHI CŨ BẰNG ĐOẠN NÀY -->
+            <h3 style="margin:15px 0 8px 0; font-size:14px; color:#475569; text-transform:uppercase; text-align:left;">Lịch sử giao dịch</h3>
             <div class="kk-table-responsive">
-                <table class="kk-table" style="width: 100%; table-layout: fixed;">
+                <table class="kk-table" style="min-width:100%;">
                     <thead>
                         <tr>
-                            <!-- Co hẹp tối đa các cột thừa để nhường chỗ cho cột Nội dung -->
-                            <th style="width: 35px; font-size: 11px; padding: 8px 2px;">Ngày</th>
-                            <th style="width: 35px; font-size: 11px; padding: 8px 2px;">Loại</th>
-                            <th style="font-size: 11px; padding: 8px 4px; text-align: left;">Nội dung / Lý do</th>
-                            <th style="width: 80px; font-size: 11px; padding: 8px 2px; text-align: right;">Số tiền</th>
-                            <th style="width: 45px; font-size: 11px; padding: 8px 2px;">Tác vụ</th>
+                            <th style="width:85px; font-size:12px; padding:8px 4px;">Ngày</th>
+                            <th style="width:60px; font-size:12px; padding:8px 4px;">Loại</th>
+                            <th style="font-size:12px; padding:8px 4px; text-align:left;">Nội dung</th>
+                            <th style="width:95px; font-size:12px; padding:8px 4px; text-align:right;">Số tiền</th>
+                            <th style="width:75px; font-size:12px; padding:8px 4px;">Tác vụ</th>
                         </tr>
                     </thead>
                     <tbody id="expenseHistoryBody"></tbody>
                 </table>
             </div>
-
         </div>
     </div>
 
@@ -460,9 +444,16 @@
             var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, weekGroups = {}; 
             for (var d = 1; d <= totalDays; d++) {
                 var h = parseFloat(document.getElementById('h-' + d).innerHTML) || 0; tc += parseFloat(document.getElementById('c-' + d).innerHTML) || 0; tcn += parseFloat(document.getElementById('cn-' + d).innerHTML) || 0; tt1 += parseFloat(document.getElementById('t1-' + d).innerHTML) || 0; tt2 += parseFloat(document.getElementById('t2-' + d).innerHTML) || 0;
-                if (h > 0 && !isSun[d]) { if (h > 12) totalMeal += 12000; var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString(); if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 }); }
+                if (h > 0 && !isSun[d]) { if (h >= 12) totalMeal += 12000; var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString(); if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 }); }
             }
-            for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) totalMeal += 10000; } } }
+            for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } 
+	if (over6Count === 2) totalMeal += 20000;
+	else if (over6Count === 3) totalMeal += 50000;
+	else if (over6Count === 4) totalMeal += 90000;
+	else if (over6Count === 5) totalMeal += 140000;
+	else if (over6Count >= 6) totalMeal += 200000;
+
+	 }
             tc = Math.round(tc * 100) / 100; var dp = sal / 26, hp = dp / 8, bh = sal * 0.105, cd = 37000; var total = Math.round((tc * dp) + (tcn * hp * 2) + (tt1 * hp * 1.5) + (tt2 * hp * 1.85) + allow + totalMeal - bh - cd);
             document.getElementById('out').innerHTML = "<span>Công: " + tc + " | TC1.5: " + tt1 + "h | TC1.85: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='red'>BH: -" + Math.round(bh).toLocaleString('vi-VN') + "đ | CĐ: -37k</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
         }
