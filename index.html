@@ -87,6 +87,12 @@
                     <span class="db-icon">💰</span>
                     <span class="db-title">Quản Lý Chi Tiêu</span>
                 </div>
+		<!-- SỔ GHI NỢ -->
+		<div class="db-btn" onclick="switchScreen('debt-section'); renderDebtHome();">
+ 		    <span class="db-icon">💳</span>
+ 		    <span class="db-title">Sổ Ghi Nợ</span>
+		</div>
+
 		<!-- THAY THẾ NÚT KIỂM KÊ CŨ BẰNG NÚT NÀY -->
                 <div class="db-btn" onclick="switchScreen('inventory-lock-section'); document.getElementById('pinInput').value=''; document.getElementById('pinInput').focus();">
                     <span class="db-icon">🔍</span>
@@ -334,6 +340,108 @@
             <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-bottom: 0; margin-top: 20px; font-style: italic;">Hệ thống quản lý DJ&M 2026</p>
         </div>
     </div>
+
+<!-- =================================================== -->
+<!-- PHÂN HỆ: SỔ GHI NỢ (CẬP NHẬT GIAO DIỆN TỐI ƯU MOBILE) -->
+<!-- =================================================== -->
+<!-- MÀN HÌNH CHÍNH: DANH SÁCH NGƯỜI NỢ -->
+<div id="debt-section" class="app-section">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+    <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')">⬅ Menu Chính</button>
+  </div>
+  <div class="box">
+    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:10px;">
+      <h2 style="margin:0; font-size: 16px; color: #475569;">DANH SÁCH SỔ GHI NỢ</h2>
+      <button onclick="addDebtUser()" style="background:#28a745; color:#fff; font-weight:bold; border:none; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:4px;">+ Thêm Người</button>
+    </div>
+    <div class="grid" id="debtUserGrid"></div>
+  </div>
+</div>
+
+<!-- MÀN HÌNH CON: CHI TIẾT LỊCH SỬ VAY/TRẢ (ĐÃ CĂN CHỈNH ĐỒNG HÀNG VÀ TỐI ƯU BẢNG) -->
+<div id="debt-detail-section" class="app-section">
+  <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+    <button class="btn-to-dashboard" onclick="switchScreen('debt-section'); renderDebtHome();">⬅ Danh Sách Nợ</button>
+  </div>
+  <div class="kk-container" style="max-width: 550px; margin-top: 10px; padding: 15px 10px;">
+    <h2 style="margin-bottom:5px; color:#1e293b; text-align:center;" id="debtCurUserName">Chi Tiết Ghi Nợ</h2>
+    <p style="text-align:center; font-weight:bold; margin-top:0; margin-bottom:15px; font-size:16px;">
+      Trạng thái số dư: <span id="debtUserBalance">0 đ</span>
+    </p>
+    
+    <!-- CSS nội bộ xử lý riêng cho hàng nhập liệu inline trên Mobile -->
+    <style>
+      .db-inline-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+      .db-inline-row label {
+        width: 105px; /* Cố định chiều rộng nhãn để các ô nhập hàng thẳng lối */
+        font-weight: bold;
+        font-size: 13px;
+        color: #475569;
+        flex-shrink: 0;
+        padding-right: 5px;
+      }
+      .db-inline-row input, .db-inline-row select {
+        flex-grow: 1;
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        background: #fafafa;
+        box-sizing: border-box;
+      }
+    </style>
+
+    <!-- Biểu mẫu nhập liệu dạng CÙNG MỘT HÀNG -->
+    <div class="db-inline-row">
+      <label>Ngày thực hiện</label>
+      <input type="date" id="dbDate">
+    </div>
+    
+    <div class="db-inline-row">
+      <label>Loại giao dịch</label>
+      <select id="dbType">
+        <option value="muon">Cho mượn (Ghi nợ)</option>
+        <option value="nhan">Nhận lại (Trả bớt)</option>
+      </select>
+    </div>
+    
+    <div class="db-inline-row">
+      <label>Số tiền</label>
+      <input type="number" id="dbAmount" step="any" inputmode="decimal" placeholder="Ví dụ: 500000 hoặc 1500.50">
+    </div>
+    
+    <div class="db-inline-row">
+      <label>Ghi chú</label>
+      <input type="text" id="dbNote" placeholder="Lý do mượn, hẹn ngày trả...">
+    </div>
+    
+    <button class="kk-btn" style="width:100%; margin-top:10px; margin-bottom:20px;" onclick="saveDebtLog()">LƯU SỔ NỢ</button>
+    
+    <!-- Bảng lịch sử dòng tiền nợ - ÉP CO NHỎ 3 CỘT ĐẦU ĐỂ TỐI ĐA CỘT GHI CHÚ -->
+    <h3 style="margin:15px 0 8px 0; font-size:13px; color:#475569; text-transform:uppercase; text-align:left;">Lịch sử mượn / trả</h3>
+    <div class="kk-table-responsive" style="overflow-x: hidden;"> <!-- Khóa cuộn ngang, ép mọi thứ hiển thị gọn trên 1 màn hình -->
+      <table class="kk-table" style="width: 100%; table-layout: fixed;">
+        <thead>
+          <tr>
+            <th style="width: 13%; font-size: 10px; padding: 6px 1px; text-align: center;">Ngày</th>
+            <th style="width: 12%; font-size: 10px; padding: 6px 1px; text-align: center;">Loại</th>
+            <th style="width: 22%; font-size: 10px; padding: 6px 2px; text-align: right;">Số tiền</th>
+            <th style="font-size: 10px; padding: 6px 4px; text-align: left;">Ghi chú</th>
+            <th style="width: 12%; font-size: 10px; padding: 6px 1px; text-align: center;">Xóa</th>
+          </tr>
+        </thead>
+        <tbody id="debtHistoryBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+
 
     <!-- =================================================== -->
     <!-- ĐOẠN 3A: KHỞI TẠO BIẾN & DANH SÁCH HÀNH CHÍNH      -->
@@ -981,6 +1089,213 @@ function importBackupData(event) {
     }
 }
 
+// ===================================================
+// LOGIC XỬ LÝ PHÂN HỆ SỔ GHI NỢ (TÍCH HỢP MỚI)
+// ===================================================
+var curDebtUserId = null;       // Lưu ID người đang xem chi tiết
+var deleteConfirmStateUser = {}; // Chờ xóa người vay
+var deleteConfirmStateLog = {};  // Chờ xóa dòng lịch sử nợ
+
+// Hàm thiết lập ngày mặc định (Hôm nay) cho trường nhập nợ
+function setDebtDefaultDate() {
+  var now = new Date();
+  var y = now.getFullYear();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  var el = document.getElementById('dbDate');
+  if (el) el.value = `${y}-${m}-${d}`;
+}
+
+// 1. HIỂN THỊ DANH SÁCH NGƯỜI TRANG CHỦ SỔ NỢ
+function renderDebtHome() {
+  var userList = JSON.parse(localStorage.getItem('djm-debt-users')) || [];
+  var html = "";
+  
+  for (var i = 0; i < userList.length; i++) {
+    var user = userList[i];
+    var isConfirming = deleteConfirmStateUser[user.id] === true;
+    var btnText = isConfirming ? "Xác nhận?" : "❌";
+    var btnClass = isConfirming ? "btn-del confirm-state" : "btn-del";
+    
+    // Tính toán số dư GAP của người này
+    var balance = getDebtUserBalance(user.id);
+    var balanceStyle = balance < 0 ? "color:#dc3545;" : "color:#28a745;";
+    var balanceText = balance.toLocaleString('vi-VN') + " đ";
+    
+    html += "<div class='card'>" +
+      "<input type='text' class='inp-name' value='" + user.name + "' oninput='saveDebtUserNameChange(" + user.id + ", this.value)' onfocus='resetDebtUserDelStates()' placeholder='Nhập tên...'>" +
+      "<div class='card-right'>" +
+      "<span class='card-salary' style='" + balanceStyle + "' title='Số dư tài khoản (GAP)'>" + balanceText + "</span>" +
+      "<button class='btn-cc' onclick='goDebtDetail(" + user.id + ")'>Chi tiết</button>" +
+      "<button class='" + btnClass + "' onclick='delDebtUserStep(" + user.id + ", event)'>" + btnText + "</button>" +
+      "</div></div>";
+  }
+  
+  document.getElementById('debtUserGrid').innerHTML = html || "<p style='text-align:center; width:100%; color:#999; padding-top:20px;'>Chưa có người nào trong sổ nợ, vui lòng bấm nút Thêm!</p>";
+}
+
+// Tính tổng tiền GAP: Nhận lại - Cho mượn (Nếu mượn nhiều hơn trả -> Số Âm)
+function getDebtUserBalance(userId) {
+  var logs = JSON.parse(localStorage.getItem('djm-debt-logs-' + userId)) || [];
+  var totalMuon = 0;
+  var totalNhan = 0;
+  for (var i = 0; i < logs.length; i++) {
+    if (logs[i].type === 'muon') totalMuon += parseFloat(logs[i].amount) || 0;
+    else if (logs[i].type === 'nhan') totalNhan += parseFloat(logs[i].amount) || 0;
+  }
+  return totalNhan - totalMuon; 
+}
+
+// Thêm một người mới vào danh sách nợ
+function addDebtUser() {
+  resetDebtUserDelStates();
+  var userList = JSON.parse(localStorage.getItem('djm-debt-users')) || [];
+  var nextId = userList.length > 0 ? Math.max.apply(null, userList.map(u => u.id)) + 1 : 1;
+  userList.push({ id: nextId, name: "Người nợ mới " + nextId });
+  localStorage.setItem('djm-debt-users', JSON.stringify(userList));
+  renderDebtHome();
+}
+
+// Lưu chỉnh sửa tên người nợ trực tiếp trên ô nhập
+function saveDebtUserNameChange(id, val) {
+  var cleanName = val.trim();
+  if (!cleanName) return;
+  var userList = JSON.parse(localStorage.getItem('djm-debt-users')) || [];
+  for (var i = 0; i < userList.length; i++) {
+    if (userList[i].id === id) {
+      userList[i].name = cleanName;
+      break;
+    }
+  }
+  localStorage.setItem('djm-debt-users', JSON.stringify(userList));
+}
+
+// Xóa người nợ bảo vệ 2 bước
+function delDebtUserStep(id, event) {
+  if (event) event.stopPropagation();
+  if (!deleteConfirmStateUser[id]) {
+    resetDebtUserDelStates();
+    deleteConfirmStateUser[id] = true;
+    renderDebtHome();
+  } else {
+    deleteConfirmStateUser[id] = false;
+    var userList = JSON.parse(localStorage.getItem('djm-debt-users')) || [];
+    userList = userList.filter(u => u.id !== id);
+    localStorage.setItem('djm-debt-users', JSON.stringify(userList));
+    localStorage.removeItem('djm-debt-logs-' + id); // Xóa sạch lịch sử đi kèm
+    renderDebtHome();
+  }
+}
+
+function resetDebtUserDelStates() { deleteConfirmStateUser = {}; }
+
+// 2. LOGIC TRANG CHI TIẾT (LỊCH SỬ NỢ)
+function goDebtDetail(id) {
+  curDebtUserId = id;
+  deleteConfirmStateLog = {}; // Reset bộ đếm xóa lịch sử dòng tiền nợ
+  
+  var userList = JSON.parse(localStorage.getItem('djm-debt-users')) || [];
+  var user = userList.find(u => u.id === id);
+  document.getElementById('debtCurUserName').innerText = user ? user.name : "Chi Tiết Ghi Nợ";
+  
+  document.getElementById('dbNote').value = "";
+  document.getElementById('dbAmount').value = "";
+  setDebtDefaultDate();
+  
+  renderDebtLogs();
+  switchScreen('debt-detail-section');
+}
+
+// Lưu một dòng lịch sử mượn hoặc trả mới
+function saveDebtLog() {
+  var dStr = document.getElementById('dbDate').value;
+  var type = document.getElementById('dbType').value;
+  var note = document.getElementById('dbNote').value.trim();
+  var amount = parseFloat(document.getElementById('dbAmount').value) || 0;
+  
+  if (!dStr || !note || amount <= 0) {
+    alert("Vui lòng điền đủ ngày, nội dung và số tiền hợp lệ!");
+    return;
+  }
+  
+  var logs = JSON.parse(localStorage.getItem('djm-debt-logs-' + curDebtUserId)) || [];
+  logs.unshift({ date: dStr, type: type, amount: amount, note: note });
+  localStorage.setItem('djm-debt-logs-' + curDebtUserId, JSON.stringify(logs));
+  
+  document.getElementById('dbNote').value = "";
+  document.getElementById('dbAmount').value = "";
+  setDebtDefaultDate();
+  renderDebtLogs();
+}
+
+// Render dữ liệu bảng lịch sử vay/trả tối ưu màn hình Mobile
+function renderDebtLogs() {
+  var logs = JSON.parse(localStorage.getItem('djm-debt-logs-' + curDebtUserId)) || [];
+  var body = document.getElementById('debtHistoryBody');
+  body.innerHTML = "";
+  
+  if (logs.length === 0) {
+    body.innerHTML = "<tr><td colspan='5' style='color:#999; padding:20px 0; text-align:center;'>Chưa có lịch sử mượn trả nào.</td></tr>";
+    document.getElementById('debtUserBalance').innerText = "0 đ";
+    document.getElementById('debtUserBalance').style.color = "#333";
+    return;
+  }
+  
+  logs.forEach(function(item, index) {
+    var typeBadge = item.type === 'muon' ? '<span style="color:#dc3545; font-weight:bold;">MƯỢN</span>' : '<span style="color:#28a745; font-weight:bold;">TRẢ</span>';
+    var amountColor = item.type === 'muon' ? 'color:#dc3545;' : 'color:#28a745;';
+    var formattedDate = item.date.split('-').reverse().slice(0,2).join('/'); // Chỉ lấy Ngày/Tháng để vừa khít màn hình điện thoại
+    
+    var isConfirming = deleteConfirmStateLog[index] === true;
+    var btnText = isConfirming ? "Xác nhận?" : "Xóa";
+    var btnStyle = isConfirming ? "background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; font-size:9px; color:#ef4444; font-weight:bold; cursor:pointer; width:auto; padding:3px 4px;" : "background:none; border:none; color:#ef4444; font-size:11px; font-weight:bold; cursor:pointer; width:auto; padding:4px;";
+    
+    var tr = document.createElement('tr');
+    tr.innerHTML = `<td style="padding:8px 2px; color:#555; text-align:center; font-size:12px;">${formattedDate}</td>
+      <td style="padding:8px 2px; text-align:center; font-size:12px;">${typeBadge}</td>
+      <td style="padding:8px 2px; text-align:right; font-weight:bold; font-size:12px; ${amountColor}">${item.amount.toLocaleString('vi-VN')}</td>
+      <td style="padding:8px 4px; text-align:left; font-size:12px; word-break: break-all;">${item.note}</td>
+      <td style="padding:8px 2px; text-align:center;"><button onclick="deleteDebtLogItem(${index})" style="${btnStyle}">${btnText}</button></td>`;
+    body.appendChild(tr);
+  });
+  
+  // Cập nhật nhãn thông tin hiển thị trạng thái tổng nợ GAP bên trên đầu trang con
+  var balance = getDebtUserBalance(curDebtUserId);
+  var balBox = document.getElementById('debtUserBalance');
+  balBox.innerText = balance.toLocaleString('vi-VN') + " đ";
+  balBox.style.color = balance < 0 ? '#d93025' : (balance > 0 ? '#1e8e3e' : '#333');
+}
+
+// Xóa dòng lịch sử mượn/trả nợ bảo vệ 2 bước
+function deleteDebtLogItem(index) {
+  if (!deleteConfirmStateLog[index]) {
+    deleteConfirmStateLog = {}; // Reset tránh kẹt chéo các dòng
+    deleteConfirmStateLog[index] = true;
+    renderDebtLogs();
+  } else {
+    deleteConfirmStateLog[index] = false;
+    var logs = JSON.parse(localStorage.getItem('djm-debt-logs-' + curDebtUserId)) || [];
+    logs.splice(index, 1);
+    localStorage.setItem('djm-debt-logs-' + curDebtUserId, JSON.stringify(logs));
+    renderDebtLogs();
+  }
+}
+
+// 3. CAN THIỆP VÀO HÀM SWITCHSCREEN CŨ ĐỂ TRANH KẸT KHÓA TRẠNG THÁI
+var originalDebtSwitchScreen = switchScreen;
+switchScreen = function(sectionId) {
+  deleteConfirmStateUser = {};
+  deleteConfirmStateLog = {};
+  
+  // Đảm bảo chữ "Chỉ tính lương DJ&M" vẫn hiển thị đúng luật ở màn hình mới
+  if (sectionId === 'main-dashboard' || sectionId === 'attendance-section' || sectionId === 'seasonal-section' || sectionId === 'debt-section') {
+    document.getElementById("cpLabel").style.display = "block";
+  } else {
+    document.getElementById("cpLabel").style.display = "none";
+  }
+  
+  if (typeof originalDebtSwitchScreen === 'function') originalDebtSwitchScreen(sectionId);
+};
 
 
     </script>
