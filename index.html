@@ -422,22 +422,23 @@
     
     <button class="kk-btn" style="width:100%; margin-top:10px; margin-bottom:20px;" onclick="saveDebtLog()">LƯU SỔ NỢ</button>
     
-    <!-- Bảng lịch sử dòng tiền nợ - ÉP CO NHỎ 3 CỘT ĐẦU ĐỂ TỐI ĐA CỘT GHI CHÚ -->
-    <h3 style="margin:15px 0 8px 0; font-size:13px; color:#475569; text-transform:uppercase; text-align:left;">Lịch sử mượn / trả</h3>
-    <div class="kk-table-responsive" style="overflow-x: hidden;"> <!-- Khóa cuộn ngang, ép mọi thứ hiển thị gọn trên 1 màn hình -->
-      <table class="kk-table" style="width: 100%; table-layout: fixed;">
-        <thead>
-          <tr>
-            <th style="width: 13%; font-size: 10px; padding: 6px 1px; text-align: center;">Ngày</th>
-            <th style="width: 12%; font-size: 10px; padding: 6px 1px; text-align: center;">Loại</th>
-            <th style="width: 22%; font-size: 10px; padding: 6px 2px; text-align: right;">Số tiền</th>
-            <th style="font-size: 10px; padding: 6px 4px; text-align: left;">Ghi chú</th>
-            <th style="width: 12%; font-size: 10px; padding: 6px 1px; text-align: center;">Xóa</th>
-          </tr>
-        </thead>
-        <tbody id="debtHistoryBody"></tbody>
-      </table>
-    </div>
+   <!-- BẢNG LỊCH SỬ DÒNG TIỀN NỢ - ĐÃ THU NHỎ TỐI ĐA CỘT SỐ TIỀN -->
+	<h3 style="margin:15px 0 8px 0; font-size:13px; color:#475569; text-transform:uppercase; text-align:left;">Lịch sử mượn / trả</h3>
+	<div class="kk-table-responsive" style="overflow-x: hidden; width: 100%;"> 
+  <table class="kk-table" style="width: 100%; table-layout: fixed; margin: 0; padding: 0;">
+    	<thead>
+      <tr>
+        <th style="width: 13%; font-size: 10px; padding: 6px 1px; text-align: center;">Ngày</th>
+        <th style="width: 12%; font-size: 10px; padding: 6px 1px; text-align: center;">Loại</th>
+        <th style="width: 18%; font-size: 10px; padding: 6px 1px; text-align: right;">Số tiền</th> <!-- Giảm từ 22% xuống 18% -->
+        <th style="font-size: 10px; padding: 6px 4px; text-align: left;">Ghi chú</th>              <!-- Tự động chiếm ~42% rộng rãi -->
+        <th style="width: 15%; font-size: 10px; padding: 6px 1px; text-align: center;">Xóa</th>   <!-- Tăng lên 15% để không bị che -->
+      </tr>
+    </thead>
+    <tbody id="debtHistoryBody"></tbody>
+  </table>
+</div>
+
   </div>
 </div>
 
@@ -1228,7 +1229,7 @@ function saveDebtLog() {
   renderDebtLogs();
 }
 
-// Render dữ liệu bảng lịch sử vay/trả tối ưu màn hình Mobile
+// Render dữ liệu bảng lịch sử vay/trả tối ưu tuyệt đối cho Mobile màn hình nhỏ
 function renderDebtLogs() {
   var logs = JSON.parse(localStorage.getItem('djm-debt-logs-' + curDebtUserId)) || [];
   var body = document.getElementById('debtHistoryBody');
@@ -1236,35 +1237,40 @@ function renderDebtLogs() {
   
   if (logs.length === 0) {
     body.innerHTML = "<tr><td colspan='5' style='color:#999; padding:20px 0; text-align:center;'>Chưa có lịch sử mượn trả nào.</td></tr>";
-    document.getElementById('debtUserBalance').innerText = "0 đ";
+    document.getElementById('debtUserBalance').innerText = "0đ";
     document.getElementById('debtUserBalance').style.color = "#333";
     return;
   }
   
   logs.forEach(function(item, index) {
-    var typeBadge = item.type === 'muon' ? '<span style="color:#dc3545; font-weight:bold;">MƯỢN</span>' : '<span style="color:#28a745; font-weight:bold;">TRẢ</span>';
+    var typeBadge = item.type === 'muon' ? '<span style="color:#dc3545; font-weight:bold;">M</span>' : '<span style="color:#28a745; font-weight:bold;">T</span>'; // Viết tắt M(Mượn) / T(Trả) để tránh tràn chữ
     var amountColor = item.type === 'muon' ? 'color:#dc3545;' : 'color:#28a745;';
-    var formattedDate = item.date.split('-').reverse().slice(0,2).join('/'); // Chỉ lấy Ngày/Tháng để vừa khít màn hình điện thoại
+    var formattedDate = item.date.split('-').reverse().slice(0,2).join('/'); // Định dạng DD/MM cực gọn
     
     var isConfirming = deleteConfirmStateLog[index] === true;
-    var btnText = isConfirming ? "Xác nhận?" : "Xóa";
-    var btnStyle = isConfirming ? "background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; font-size:9px; color:#ef4444; font-weight:bold; cursor:pointer; width:auto; padding:3px 4px;" : "background:none; border:none; color:#ef4444; font-size:11px; font-weight:bold; cursor:pointer; width:auto; padding:4px;";
+    var btnText = isConfirming ? "Hủy?" : "Xóa"; // Thu gọn chữ xác nhận để không đẩy bung hàng
+    var btnStyle = isConfirming 
+      ? "background:#ef4444; border:none; border-radius:3px; font-size:9px; color:#fff; font-weight:bold; cursor:pointer; width:100%; padding:3px 0; text-align:center; display:block;" 
+      : "background:none; border:none; color:#ef4444; font-size:11px; font-weight:bold; cursor:pointer; width:100%; padding:3px 0; text-align:center; display:block;";
     
     var tr = document.createElement('tr');
-    tr.innerHTML = `<td style="padding:8px 2px; color:#555; text-align:center; font-size:12px;">${formattedDate}</td>
-      <td style="padding:8px 2px; text-align:center; font-size:12px;">${typeBadge}</td>
-      <td style="padding:8px 2px; text-align:right; font-weight:bold; font-size:12px; ${amountColor}">${item.amount.toLocaleString('vi-VN')}</td>
-      <td style="padding:8px 4px; text-align:left; font-size:12px; word-break: break-all;">${item.note}</td>
-      <td style="padding:8px 2px; text-align:center;"><button onclick="deleteDebtLogItem(${index})" style="${btnStyle}">${btnText}</button></td>`;
+    tr.innerHTML = `<td style="padding:6px 1px; color:#555; text-align:center; font-size:11px; white-space:nowrap;">${formattedDate}</td>
+      <td style="padding:6px 1px; text-align:center; font-size:11px;">${typeBadge}</td>
+      <td style="padding:6px 1px; text-align:right; font-weight:bold; font-size:11px; ${amountColor} white-space:nowrap;">${item.amount.toLocaleString('vi-VN')}đ</td>
+      <td style="padding:6px 4px; text-align:left; font-size:11px; word-break: break-all; line-height:1.2;">${item.note}</td>
+      <td style="padding:6px 1px; text-align:center; vertical-align:middle;">
+        <button onclick="deleteDebtLogItem(${index})" style="${btnStyle}">${btnText}</button>
+      </td>`;
     body.appendChild(tr);
   });
   
   // Cập nhật nhãn thông tin hiển thị trạng thái tổng nợ GAP bên trên đầu trang con
   var balance = getDebtUserBalance(curDebtUserId);
   var balBox = document.getElementById('debtUserBalance');
-  balBox.innerText = balance.toLocaleString('vi-VN') + " đ";
+  balBox.innerText = balance.toLocaleString('vi-VN') + "đ";
   balBox.style.color = balance < 0 ? '#d93025' : (balance > 0 ? '#1e8e3e' : '#333');
 }
+
 
 // Xóa dòng lịch sử mượn/trả nợ bảo vệ 2 bước
 function deleteDebtLogItem(index) {
