@@ -222,7 +222,7 @@
      </div>
      <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 25px;">
        <button class="kk-btn" style="padding: 14px; font-size: 15px;" onclick="switchScreen('inventory-section')">🔍 Kiểm Kê Tồn Kho</button>
-       <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #28a745;" onclick="switchScreen('debt-section'); renderDebtHome();">💳 Sổ Ghi Nợ Công Nợ</button>
+       <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #28a745;" onclick="switchScreen('debt-section'); renderDebtHome();">💳 Sổ Ghi Nợ</button>
        <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #64748b;" onclick="switchScreen('password-manager-section'); renderPasswordLogs();">🔐 Sổ Lưu Mật Khẩu</button>
      </div>
      <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; font-style: italic;">Hệ thống quản lý DJ&M 2026</p>
@@ -301,7 +301,7 @@
        <button class="kk-tab-btn" onclick="openTab(event, 'tabSeal')">Tính tồn Seal</button>
      </div>
      <div id="tabPaper" class="kk-tab-content active">
-       <h2>Tính Tồn TM'l</h2>
+       <h2>Tính Tồn TM'L</h2>
        <div class="kk-input-group"><label>Đường kính lõi (mm)</label><input type="number" id="d_core" placeholder="Kích thước lõi"></div>
        <div class="kk-input-group"><label>Đường kính cuộn đầy (mm)</label><input type="number" id="D_full" placeholder="Kích thước cuộn chưa sử dụng"></div>
        <div class="kk-input-group"><label>Đường kính còn lại (mm)</label><input type="number" id="D_current" placeholder="Kích thước cuộn đã sử dụng"></div>
@@ -329,7 +329,7 @@
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button></div>
    <div class="box">
      <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:2px solid #eee; padding-bottom:10px;">
-       <h2 style="margin:0; font-size: 16px; color: #475569;">DANH SÁCH SỔ GHI NỢ</h2>
+       <h2 style="margin:0; font-size: 16px; color: #475569;">DANH SÁCH GHI NỢ</h2>
        <button onclick="addDebtUser()" style="background:#28a745; color:#fff; font-weight:bold; border:none; padding:6px 12px; font-size:14px; cursor:pointer; border-radius:4px;">+ Thêm Người</button>
      </div>
      <div class="grid" id="debtUserGrid"></div>
@@ -763,7 +763,7 @@
      else { let lichSuToanBo = JSON.parse(localStorage.getItem('lichSuTinhTon')) || { tabPaper: [], tabSeal: [] }; lichSuToanBo[currentActiveTab] = []; localStorage.setItem('lichSuTinhTon', JSON.stringify(lichSuToanBo)); xemLichSu(currentActiveTab); }
  }
  </script>
- <script>
+  <script>
  var debtUserList = [];
  try {
      var savedUserList = localStorage.getItem('djm-debt-users');
@@ -777,7 +777,8 @@
  function renderDebtHome() {
      var html = ""; 
      for (var i = 0; i < debtUserList.length; i++) {
-         var id = Number(debtUserList[i]); 
+         // ÉP ID THÀNH CHUỖI ĐỂ ĐỒNG BỘ TUYỆT ĐỐI TRÊN DI ĐỘNG
+         var id = String(debtUserList[i]); 
          var name = localStorage.getItem("dn-" + id) || "Người nợ " + id; 
          var balance = getDebtBalance(id); 
          var isConfirming = (deleteConfirmStateDU[id] === true); 
@@ -785,7 +786,7 @@
          var btnClass = isConfirming ? "btn-del confirm-state" : "btn-del"; 
          var balStyle = balance > 0 ? "color:#dc3545;" : (balance < 0 ? "color:#28a745;" : "color:#64748b;");
          
-         html += `<div class='card'><input type='text' class='inp-name' value='${name}' oninput='saveDebtNameChange(${id}, this.value)' placeholder='Tên...'><div class='card-right'><span class='card-salary' style='${balStyle}'>${Math.abs(balance).toLocaleString('vi-VN')} đ</span><button class='btn-cc' onclick='goDebtDetail(${id})'>Chi tiết</button><button class='${btnClass}' onclick='delDebtUser(${id}, event)'>${btnText}</button></div></div>`;
+         html += `<div class='card'><input type='text' class='inp-name' value='${name}' oninput='saveDebtNameChange("${id}", this.value)' placeholder='Tên...'><div class='card-right'><span class='card-salary' style='${balStyle}'>${Math.abs(balance).toLocaleString('vi-VN')} đ</span><button class='btn-cc' onclick='goDebtDetail("${id}")'>Chi tiết</button><button class='${btnClass}' onclick='delDebtUser("${id}", event)'>${btnText}</button></div></div>`;
      }
      var grid = document.getElementById('debtUserGrid'); 
      if (grid) grid.innerHTML = html || "<p style='text-align:center; width:100%; color:#999; padding-top:20px;'>Chưa có sổ nợ nào, hãy thêm mới!</p>";
@@ -793,28 +794,31 @@
 
  function saveDebtNameChange(id, val) { 
      if (!val.trim()) return; 
-     localStorage.setItem("dn-" + Number(id), val.trim()); 
+     localStorage.setItem("dn-" + String(id), val.trim()); 
  }
 
  function addDebtUser() { 
-     var nextId = Date.now(); 
+     var nextId = String(Date.now()); 
      debtUserList.push(nextId); 
      localStorage.setItem('djm-debt-users', JSON.stringify(debtUserList)); 
      deleteConfirmStateDU = {}; 
      renderDebtHome(); 
  }
  </script>
- <script>
+
+  <script>
  function delDebtUser(id, event) { 
      if (event) { event.stopPropagation(); event.preventDefault(); }
-     var targetId = Number(id);
-     if (!deleteConfirmStateDU[targetId]) { 
+     var targetId = String(id);
+     
+     if (deleteConfirmStateDU[targetId] !== true) { 
          deleteConfirmStateDU = {}; 
          deleteConfirmStateDU[targetId] = true; 
          renderDebtHome(); 
      } else { 
          deleteConfirmStateDU[targetId] = false; 
-         debtUserList = debtUserList.filter(function(item) { return Number(item) !== targetId; }); 
+         // BỘ LỌC CHUỖI LIÊN KẾT GIÚP XÓA NGƯỜI ĐẦU TIÊN VÀ MỌI NGƯỜI KHÁC TRƠN TRU
+         debtUserList = debtUserList.filter(function(item) { return String(item) !== targetId; }); 
          localStorage.setItem('djm-debt-users', JSON.stringify(debtUserList)); 
          localStorage.removeItem("dn-" + targetId); 
          localStorage.removeItem("dl-" + targetId); 
@@ -824,11 +828,13 @@
  }
 
  function getDebtBalance(id) { 
-     var logs = []; try { var saved = localStorage.getItem("dl-" + Number(id)); if (saved) logs = JSON.parse(saved); } catch(e) { logs = []; } 
+     var logs = []; try { var saved = localStorage.getItem("dl-" + String(id)); if (saved) logs = JSON.parse(saved); } catch(e) { logs = []; } 
      var bal = 0; logs.forEach(function(item) { if (item.type === 'muon') bal += item.amount; else bal -= item.amount; }); 
      return bal; 
  }
+ </script>
 
+ <script>
  function setDebtDefaultDate() { var now = new Date(), y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0'); var el = document.getElementById('dbDate'); if (el) el.value = `${y}-${m}-${d}`; }
  function goDebtDetail(id) { currentDebtUserId = Number(id); deleteConfirmStateDL = {}; var savedName = localStorage.getItem("dn-" + currentDebtUserId) || "Người nợ"; document.getElementById('debtCurUserName').innerText = "Sổ nợ: " + savedName; setDebtDefaultDate(); renderDebtLogs(); switchScreen('debt-detail-section'); }
  
