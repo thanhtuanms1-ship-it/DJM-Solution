@@ -72,7 +72,29 @@
  .col-money { flex: 0 0 25%; text-align: right; font-size: 11px; font-weight: bold; padding-right: 6px; box-shrink: 0; box-sizing: border-box; }
  .col-note { flex: 1; text-align: left; font-size: 11px; color: #1e293b; padding: 0 6px; word-break: break-all; line-height: 1.3; }
  .col-action { flex: 0 0 14%; text-align: center; display: flex; justify-content: center; }
- </style>
+ 
+/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
+#attendance-section div[style*="overflow-x"], 
+#seasonal-section div[style*="overflow-x"] {
+    max-height: 70vh; /* Giới hạn chiều cao vùng bảng để cuộn nội bộ */
+    overflow-y: auto;  /* Cho phép cuộn dọc nội bộ bảng */
+    overflow-x: auto;  /* Cho phép vuốt ngang trên điện thoại */
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+}
+/* ĐẢM BẢO TIÊU ĐỀ LUÔN NẰM TRÊN CÙNG KHI CUỘN NỘI BỘ VÙNG BẢNG */
+#attendance-section th, 
+#seasonal-section th {
+    position: sticky !important;
+    top: 0 !important;
+    background: #333 !important;
+    color: #fff !important;
+    z-index: 102 !important;
+    box-shadow: inset 0 -1px 0 #ddd;
+}
+
+</style>
 </head>
 <body>
  <!-- MENU CHÍNH TỔNG (DASHBOARD) -->
@@ -528,8 +550,12 @@
      var d = document.getElementById('sDay').value; var target = document.getElementById('r-' + d);
      if (target) { document.querySelectorAll('#tb tr').forEach(function(r) { r.classList.remove('active-row'); }); target.classList.add('active-row'); var stickyHeight = document.getElementById('stTop').offsetHeight || 80; var targetPosition = target.offsetTop + target.offsetParent.offsetTop; window.scrollTo({ top: targetPosition - stickyHeight - 10, behavior: 'smooth' }); var savedText = document.getElementById('n-' + d).innerHTML; document.getElementById('note').value = (savedText === '-') ? '' : savedText; }
  }
- function fixTh() { var h = document.getElementById('stTop').offsetHeight; document.querySelectorAll('#attendance-section th').forEach(function(th) { th.style.top = (h - 1) + 'px'; }); }
- window.addEventListener('resize', fixTh);
+ 
+// CẬP NHẬT HÀM GHIM TIÊU ĐỀ KHÔNG BỊ TRÔI MẤT KHI CUỘN
+function fixTh() { 
+    var h = document.getElementById('stTop').offsetHeight; 
+    document.querySelectorAll('#attendance-section th').forEach(function(th) { th.style.top = '0px'; }); 
+}
  </script>
  <script>
  var todayTV = new Date(), curY_TV = todayTV.getFullYear(), curM_TV = todayTV.getMonth() + 1, curD_TV = todayTV.getDate(), idEmpTV = null, isSunTV = {};
@@ -610,8 +636,10 @@
      document.getElementById('outTV').innerHTML = "<span>Công: " + tc + " | TCT: " + tt1 + "h | TCĐ: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
  }
  function scrollDayTV() { var d = document.getElementById('sDayTV').value; var target = document.getElementById('rtv-' + d); if (target) { document.querySelectorAll('#tbTV tr').forEach(function(r) { r.classList.remove('active-row'); }); target.classList.add('active-row'); var stickyHeight = document.getElementById('stTopTV').offsetHeight || 80; var targetPosition = target.offsetTop + target.offsetParent.offsetTop; window.scrollTo({ top: targetPosition - stickyHeight - 10, behavior: 'smooth' }); var savedText = document.getElementById('ntv-' + d).innerHTML; document.getElementById('noteTV').value = (savedText === '-') ? '' : savedText; } }
- function fixThTV() { var h = document.getElementById('stTopTV').offsetHeight; document.querySelectorAll('#seasonal-section th').forEach(function(th) { th.style.top = (h - 1) + 'px'; }); }
-
+function fixThTV() { 
+    var h = document.getElementById('stTopTV').offsetHeight; 
+    document.querySelectorAll('#seasonal-section th').forEach(function(th) { th.style.top = '0px'; }); 
+}
  var calViewDate = new Date(); var deleteConfirmStateKN = {};
  function getAmLich(d, m, y) {
      var baseDate = new Date(2020, 0, 25); var currDate = new Date(y, m - 1, d);
