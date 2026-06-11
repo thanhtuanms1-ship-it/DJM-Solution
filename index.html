@@ -94,6 +94,30 @@
     box-shadow: inset 0 -1px 0 #ddd;
 }
 
+/* TẠO VÙNG CUỘN DỌC VÀ CO GIÃN NGANG NỘI BỘ CHO BẢNG CHẤM CÔNG */
+#attendance-section div[style*="overflow-x"], 
+#seasonal-section div[style*="overflow-x"] {
+    max-height: 65vh !important; /* Giới hạn chiều cao bảng công vừa khít màn hình điện thoại */
+    overflow-y: auto !important;  /* Cho phép cuộn dọc nội bộ bảng */
+    overflow-x: auto !important;  /* Cho phép vuốt ngang co giãn trên điện thoại */
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+/* ÉP TRÌNH DUYỆT KHÓA CỨNG TIÊU ĐỀ LUÔN NẰM TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
+#attendance-section table thead tr th, 
+#seasonal-section table thead tr th {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: #333333 !important;
+    color: #ffffff !important;
+    z-index: 110 !important;
+    box-shadow: inset 0 -1px 0 #ddd;
+}
+
+
 </style>
 </head>
 <body>
@@ -546,16 +570,31 @@
      document.getElementById('out').innerHTML = "<span>Công: " + tc + " | TC1.5: " + tt1 + "h | TC1.85: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='red'>BH: -" + Math.round(bh).toLocaleString('vi-VN') + "đ | CĐ: -37k</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
  }
 
- function scrollDay() {
-     var d = document.getElementById('sDay').value; var target = document.getElementById('r-' + d);
-     if (target) { document.querySelectorAll('#tb tr').forEach(function(r) { r.classList.remove('active-row'); }); target.classList.add('active-row'); var stickyHeight = document.getElementById('stTop').offsetHeight || 80; var targetPosition = target.offsetTop + target.offsetParent.offsetTop; window.scrollTo({ top: targetPosition - stickyHeight - 10, behavior: 'smooth' }); var savedText = document.getElementById('n-' + d).innerHTML; document.getElementById('note').value = (savedText === '-') ? '' : savedText; }
- }
+function scrollDay() {
+    var d = document.getElementById('sDay').value; 
+    var target = document.getElementById('r-' + d);
+    if (target) { 
+        // Tô màu nền cho dòng ngày đang chọn để dễ theo dõi
+        document.querySelectorAll('#tb tr').forEach(function(r) { r.classList.remove('active-row'); }); 
+        target.classList.add('active-row'); 
+        
+        // Tìm đúng thẻ div bọc ngoài bảng công hành chính để kích hoạt cuộn nội bộ
+        var container = target.closest('div[style*="overflow-x"]');
+        if (container) {
+            // Tính toán vị trí của dòng công so với đỉnh đầu của hộp chứa bảng công
+            var targetPosition = target.offsetTop - target.parentElement.offsetTop;
+            container.scrollTo({ top: targetPosition, behavior: 'smooth' }); 
+        }
+        
+        // Nạp nội dung ghi chú của ngày được chọn vào ô nhập liệu
+        var savedText = document.getElementById('n-' + d).innerHTML; 
+        document.getElementById('note').value = (savedText === '-') ? '' : savedText; 
+    }
+}
+
  
 // CẬP NHẬT HÀM GHIM TIÊU ĐỀ KHÔNG BỊ TRÔI MẤT KHI CUỘN
-function fixTh() { 
-    var h = document.getElementById('stTop').offsetHeight; 
-    document.querySelectorAll('#attendance-section th').forEach(function(th) { th.style.top = '0px'; }); 
-}
+function fixTh() { return; }
  </script>
  <script>
  var todayTV = new Date(), curY_TV = todayTV.getFullYear(), curM_TV = todayTV.getMonth() + 1, curD_TV = todayTV.getDate(), idEmpTV = null, isSunTV = {};
@@ -635,18 +674,28 @@ function fixTh() {
      tc = Math.round(tc * 100) / 100; var dp = sal / 26; var total = Math.round((tc * dp) + (tt1 * t1_price) + (tt2 * t2_price) + (tcn * cn_price) + allow + totalMeal);
      document.getElementById('outTV').innerHTML = "<span>Công: " + tc + " | TCT: " + tt1 + "h | TCĐ: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
  }
- function scrollDayTV() { var d = document.getElementById('sDayTV').value; var target = document.getElementById('rtv-' + d); if (target) { document.querySelectorAll('#tbTV tr').forEach(function(r) { r.classList.remove('active-row'); }); target.classList.add('active-row'); var stickyHeight = document.getElementById('stTopTV').offsetHeight || 80; var targetPosition = target.offsetTop + target.offsetParent.offsetTop; window.scrollTo({ top: targetPosition - stickyHeight - 10, behavior: 'smooth' }); var savedText = document.getElementById('ntv-' + d).innerHTML; document.getElementById('noteTV').value = (savedText === '-') ? '' : savedText; } }
-function fixThTV() { 
-    var h = document.getElementById('stTopTV').offsetHeight; 
-    document.querySelectorAll('#seasonal-section th').forEach(function(th) { th.style.top = '0px'; }); 
+ function scrollDayTV() { 
+    var d = document.getElementById('sDayTV').value; 
+    var target = document.getElementById('rtv-' + d); 
+    if (target) { 
+        // Tô màu nền cho dòng ngày đang chọn để dễ theo dõi
+        document.querySelectorAll('#tbTV tr').forEach(function(r) { r.classList.remove('active-row'); }); 
+        target.classList.add('active-row'); 
+        
+        // Tìm đúng thẻ div bọc ngoài bảng công thời vụ để kích hoạt cuộn nội bộ
+        var container = target.closest('div[style*="overflow-x"]');
+        if (container) {
+            // Tính toán vị trí của dòng công so với đỉnh đầu của hộp chứa bảng công
+            var targetPosition = target.offsetTop - target.parentElement.offsetTop;
+            container.scrollTo({ top: targetPosition, behavior: 'smooth' }); 
+        }
+        
+        // Nạp nội dung ghi chú của ngày được chọn vào ô nhập liệu
+        var savedText = document.getElementById('ntv-' + d).innerHTML; 
+        document.getElementById('noteTV').value = (savedText === '-') ? '' : savedText; 
+    } 
 }
- var calViewDate = new Date(); var deleteConfirmStateKN = {};
- function getAmLich(d, m, y) {
-     var baseDate = new Date(2020, 0, 25); var currDate = new Date(y, m - 1, d);
-     var diffDays = Math.floor((currDate - baseDate) / (24 * 60 * 60 * 1000)); if (diffDays < 0) return {aDay: ""};
-     var totalLunis = diffDays / 29.5306; var currentM = Math.floor(totalLunis) % 12 + 1; var currentD = Math.floor((totalLunis - Math.floor(totalLunis)) * 29.5306) + 1;
-     if (currentD > 30) { currentD = 1; currentM = (currentM % 12) + 1; } return currentD === 1 ? {aDay: "1/" + currentM} : {aDay: currentD};
- }
+
  </script>
  <script>
  function initCalendar() {
