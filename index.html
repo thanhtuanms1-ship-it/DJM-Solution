@@ -270,6 +270,7 @@
        <button class="kk-btn" style="padding: 14px; font-size: 15px;" onclick="switchScreen('inventory-section')">🔍 Kiểm Kê Tồn Kho</button>
        <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #28a745;" onclick="switchScreen('debt-section'); renderDebtHome();">💳 Sổ Ghi Nợ</button>
        <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #64748b;" onclick="switchScreen('password-manager-section'); renderPasswordLogs();">🔐 Sổ Lưu Mật Khẩu</button>
+       <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #0ea5e9;" onclick="switchScreen('code-converter-section'); renderCodeHome();">🔀 Tra Cứu Mã NVL</button>
      </div>
      <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; font-style: italic;">Hệ thống quản lý DJ&M 2026</p>
    </div>
@@ -413,6 +414,48 @@
      <div class="db-history-list">
        <div class="db-list-header"><div style="flex: 0 0 30%; text-align: left; padding-left: 5px;">Ứng dụng</div><div style="flex: 0 0 30%; text-align: left;">Tài khoản</div><div style="flex: 0 0 26%; text-align: left;">Mật khẩu</div><div style="flex: 0 0 14%; text-align: center;">Xóa</div></div>
        <div id="passwordHistoryBody"></div>
+     </div>
+   </div>
+ </div>
+
+ <!-- TRANG CON: TRA CỨU & QUY ĐỔI MÃ NỘI BỘ (TỰ CO GIÃN CHỐNG TRÀN) -->
+ <div id="code-converter-section" class="app-section">
+   <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
+     <button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button>
+   </div>
+   <div class="kk-container" style="max-width: 550px; margin-top: 10px; padding: 15px 10px; background:#fff;">
+     <h2 style="margin-bottom:15px; color:#1e293b; text-align:center;">Tra Cứu NVL</h2>
+     
+     <!-- KHU VỰC TRA CỨU BIẾN ĐỘNG THỜI GIAN THỰC -->
+     <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:20px;">
+       <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:6px;">🔍 NHẬP MÃ ĐỂ TRA CỨU:</label>
+       <input type="text" id="codeSearchInp" oninput="liveSearchCode()" placeholder="Gõ mã cần dò tìm..." style="width:100%; padding:10px; border:1px solid #007bff; border-radius:6px; font-size:15px; box-sizing:border-box; background:#fff;">
+       
+       <!-- KHU VỰC KẾT QUẢ HIỂN THỊ ĐỘC LẬP 3 DÒNG THEO YÊU CẦU -->
+       <div id="codeSearchResultBox" style="margin-top:10px; padding:0; display:none; flex-direction:column; gap:8px;"></div>
+     </div>
+
+     <!-- KHU VỰC NHẬP DỮ LIỆU CẶP MÃ QUY ĐỔI -->
+       <div class="db-inline-row" style="margin-bottom: 2px;">
+       <label>Mã gốc</label>
+       <input type="text" id="codeOriginalInp" oninput="checkDuplicateCode()" placeholder="Ví dụ: 893456...">
+     </div>
+     <!-- DÒNG CHỮ ĐỎ CẢNH BÁO TRÙNG MÃ ẨN MẶC ĐỊNH -->
+     <div id="codeDuplicateAlert" style="display:none; color:#ef4444; font-size:11px; font-weight:bold; margin-left:105px; margin-bottom:10px; text-align:left; line-height:1.2;"></div>
+
+     <div class="db-inline-row"><label>Mã nội bộ</label><input type="text" id="codeInternalInp" placeholder="Ví dụ: TM-01..."></div>
+     <div class="db-inline-row"><label>Ghi chú</label><input type="text" id="codeNoteInp" placeholder="Tên linh kiện, quy cách..."></div>
+     <button class="kk-btn" style="width:100%; margin-top:8px; margin-bottom:25px; background-color:#10b981;" onclick="saveNewCodePair()">LƯU MÃ</button>
+     
+     <h3 style="margin:10px 0 8px 0; font-size:13px; color:#475569; text-transform:uppercase; text-align:left;">Danh sách mã đã lưu</h3>
+     <div class="db-history-list">
+       <div class="db-list-header">
+         <div style="flex: 0 0 35%; text-align: left; padding-left: 5px;">Mã Gốc</div>
+         <div style="flex: 0 0 30%; text-align: left;">Mã Nội Bộ</div>
+         <div style="flex: 1; text-align: left; padding-left: 4px;">Ghi chú</div>
+         <div style="flex: 0 0 12%; text-align: center;">Xóa</div>
+       </div>
+       <div id="codeHistoryBody" style="width: 100%; box-sizing: border-box;"></div>
      </div>
    </div>
  </div>
@@ -956,6 +999,99 @@ function fixTh() { return; }
  function deletePasswordItem(index, event) { if (event) event.stopPropagation(); if (!deleteConfirmStatePwd[index]) { deleteConfirmStatePwd = {}; deleteConfirmStatePwd[index] = true; renderPasswordLogs(); } else { deleteConfirmStatePwd[index] = false; var pwdList = JSON.parse(localStorage.getItem('djm-password-list')) || []; pwdList.splice(index, 1); localStorage.setItem('djm-password-list', JSON.stringify(pwdList)); delete hiddenPasswordState[index]; renderPasswordLogs(); } }
  
  document.addEventListener("DOMContentLoaded", function() { if (typeof renderHome === "function") renderHome(); if (typeof renderHomeTV === "function") renderHomeTV(); });
- </script>
+ 
+ // ===================================================
+ // LOGIC XỬ LÝ TRANG CON TRA CỨU & QUY ĐỔI MÃ NỘI BỘ
+ // ===================================================
+ var codePairList = [];
+ try {
+     var savedCodes = localStorage.getItem('djm-code-pairs');
+     if (savedCodes) codePairList = JSON.parse(savedCodes);
+ } catch(e) { codePairList = []; }
+ var deleteConfirmStateCode = {};
+
+ function renderCodeHome() {
+     var body = document.getElementById('codeHistoryBody'); if (!body) return; body.innerHTML = "";
+     document.getElementById('codeSearchInp').value = ""; document.getElementById('codeSearchResultBox').style.display = "none";
+     if (codePairList.length === 0) { body.innerHTML = "<div style='color:#999; padding:15px; text-align:center; font-size:12px; background:#fff;'>Chưa có cặp mã quy đổi nào.</div>"; return; }
+     var html = "";
+     codePairList.forEach(function(item, index) {
+         var id = String(item.id || index); var isConfirming = (deleteConfirmStateCode[id] === true); var btnText = isConfirming ? "Hủy" : "❌"; var btnStyle = isConfirming ? "background:#ef4444; color:#fff; font-size:10px; font-weight:bold; padding:3px 5px; border:none; border-radius:3px;" : "background:none; color:#ef4444; font-size:12px; border:none; cursor:pointer;";
+         html += `<div class='db-list-item'><div style='flex: 0 0 35%; text-align: left; padding-left: 5px; font-size:11px; font-weight:bold; word-break:break-all;'>${item.orig}</div><div style='flex: 0 0 30%; text-align: left; font-size:11px; color:#1a73e8; font-weight:bold; word-break:break-all;'>${item.intern}</div><div style='flex: 1; text-align: left; font-size:11px; color:#475569; padding-left:4px; word-break:break-all;'>${item.note || "-"}</div><div style='flex: 0 0 12%; text-align: center;'><button onclick='deleteCodePair("${id}", event)' style='${btnStyle}'>${btnText}</button></div></div>`;
+     });
+     body.innerHTML = html;
+ }
+
+ function saveNewCodePair() {
+     var orig = document.getElementById('codeOriginalInp').value.trim(); var intern = document.getElementById('codeInternalInp').value.trim(); var note = document.getElementById('codeNoteInp').value.trim();
+     if (!orig || !intern) { alert("Vui lòng nhập đầy đủ Mã gốc và Mã nội bộ!"); return; }
+     codePairList.unshift({ id: String(Date.now()), orig: orig, intern: intern, note: note });
+     localStorage.setItem('djm-code-pairs', JSON.stringify(codePairList));
+     document.getElementById('codeOriginalInp').value = ""; document.getElementById('codeInternalInp').value = ""; document.getElementById('codeNoteInp').value = "";
+     deleteConfirmStateCode = {}; renderCodeHome();
+ }
+
+ function deleteCodePair(id, event) {
+     if (event) { event.stopPropagation(); event.preventDefault(); } var targetId = String(id);
+     if (!deleteConfirmStateCode[targetId]) { deleteConfirmStateCode = {}; deleteConfirmStateCode[targetId] = true; var body = document.getElementById('codeHistoryBody'); if(body) { var list = JSON.parse(localStorage.getItem('djm-code-pairs')) || []; var html = ""; list.forEach(function(item, index) { var currId = String(item.id || index); var isConf = (currId === targetId); var btnText = isConf ? "Xác nhận?" : "❌"; var btnStyle = isConf ? "background:#ef4444; color:#fff; font-size:10px; font-weight:bold; padding:3px 5px; border:none; border-radius:3px;" : "background:none; color:#ef4444; font-size:12px; border:none; cursor:pointer;"; html += `<div class='db-list-item'><div style='flex: 0 0 35%; text-align: left; padding-left: 5px; font-size:11px; font-weight:bold; word-break:break-all;'>${item.orig}</div><div style='flex: 0 0 30%; text-align: left; font-size:11px; color:#1a73e8; font-weight:bold; word-break:break-all;'>${item.intern}</div><div style='flex: 1; text-align: left; font-size:11px; color:#475569; padding-left:4px; word-break:break-all;'>${item.note || "-"}</div><div style='flex: 0 0 12%; text-align: center;'><button onclick='deleteCodePair("${currId}", event)' style='${btnStyle}'>${btnText}</button></div></div>`; }); body.innerHTML = html; } }
+     else { deleteConfirmStateCode[targetId] = false; codePairList = codePairList.filter(function(item, idx) { var currId = String(item.id || idx); return currId !== targetId; }); localStorage.setItem('djm-code-pairs', JSON.stringify(codePairList)); deleteConfirmStateCode = {}; renderCodeHome(); }
+ }
+
+ // THUẬT TOÁN TRA CỨU THEO THỜI GIAN THỰC (REAL-TIME) - ĐÚNG 3 DÒNG THEO YÊU CẦU
+ function liveSearchCode() {
+     var keyword = document.getElementById('codeSearchInp').value.trim().toLowerCase(); var resBox = document.getElementById('codeSearchResultBox');
+     if (!keyword) { resBox.innerHTML = ""; resBox.style.display = "none"; return; }
+     var match = codePairList.find(function(item) { return item.orig.toLowerCase() === keyword || item.orig.toLowerCase().indexOf(keyword) !== -1; });
+     if (match) {
+         resBox.innerHTML = `<div style="background:#e0f2fe; border:1px solid #bae6fd; padding:12px; border-radius:8px; text-align:left; line-height:1.5;">` +
+                            `<div style="font-size:14px; font-weight:bold; color:#0369a1;">🔹 Mã gốc: ${match.orig}</div>` +
+                            `<div style="font-size:16px; font-weight:bold; color:#1e293b; margin-top:2px;">🔥 Mã nội bộ: <span style="color:#1a73e8;">${match.intern}</span></div>` +
+                            `<div style="font-size:11px; color:#64748b; font-style:italic; margin-top:4px; border-top:1px dashed #cbd5e1; padding-top:4px;">📝 Ghi chú: ${match.note || "Không có"}</div>` +
+                            `</div>`;
+         resBox.style.display = "flex";
+     } else {
+         resBox.innerHTML = `<div style="background:#fff1f2; border:1px solid #fecdd3; color:#e11d48; padding:10px; border-radius:8px; font-size:13px; font-weight:bold; text-align:center;">❌ Không tìm thấy mã quy đổi hợp lệ!</div>`;
+         resBox.style.display = "flex";
+     }
+ }
+
+ // HÀM KIỂM TRA TRÙNG MÃ THỜI GIAN THỰC KHI ĐANG GÕ
+ function checkDuplicateCode() {
+     var origVal = document.getElementById('codeOriginalInp').value.trim().toLowerCase();
+     var alertBox = document.getElementById('codeDuplicateAlert');
+     if (!origVal) { alertBox.innerHTML = ""; alertBox.style.display = "none"; return false; }
+     
+     // DÒ TÌM XEM MÃ GỐC ĐÃ TỒN TẠI TRONG BỘ NHỚ CHƯA
+     var match = codePairList.find(function(item) { return item.orig.toLowerCase() === origVal; });
+     if (match) {
+         alertBox.innerHTML = `⚠ Đã tồn tại với mã quy đổi: <span style="text-decoration:underline;">${match.intern}</span>`;
+         alertBox.style.display = "block";
+         return true; // Trả về trạng thái có trùng
+     } else {
+         alertBox.innerHTML = ""; alertBox.style.display = "none";
+         return false; // Trả về trạng thái sạch, không trùng
+     }
+ }
+
+ // CẬP NHẬT LẠI HÀM LƯU MÃ ĐỂ CHẶN KHÔNG CHO LƯU NẾU CỐ TÌNH ẤN KHI TRÙNG MÃ
+ var originalSaveFunc = saveNewCodePair; 
+ saveNewCodePair = function() {
+     if (checkDuplicateCode()) { 
+         alert("Không thể lưu! Mã gốc này đã tồn tại trong hệ thống dữ liệu."); 
+         return; 
+     }
+     var orig = document.getElementById('codeOriginalInp').value.trim();
+     var intern = document.getElementById('codeInternalInp').value.trim();
+     var note = document.getElementById('codeNoteInp').value.trim();
+     if (!orig || !intern) { alert("Vui lòng nhập đầy đủ Mã gốc và Mã nội bộ!"); return; }
+     codePairList.unshift({ id: String(Date.now()), orig: orig, intern: intern, note: note });
+     localStorage.setItem('djm-code-pairs', JSON.stringify(codePairList));
+     document.getElementById('codeOriginalInp').value = ""; document.getElementById('codeInternalInp').value = ""; document.getElementById('codeNoteInp').value = "";
+     document.getElementById('codeDuplicateAlert').style.display = "none";
+     deleteConfirmStateCode = {}; renderCodeHome();
+ };
+
+
+</script>
 </body>
 </html>
