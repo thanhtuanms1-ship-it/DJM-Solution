@@ -74,51 +74,28 @@
  .col-action { flex: 0 0 14%; text-align: center; display: flex; justify-content: center; }
  
 /* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
+/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 #attendance-section div[style*="overflow-x"], 
 #seasonal-section div[style*="overflow-x"] {
-    max-height: 70vh; /* Giới hạn chiều cao vùng bảng để cuộn nội bộ */
-    overflow-y: auto;  /* Cho phép cuộn dọc nội bộ bảng */
-    overflow-x: auto;  /* Cho phép vuốt ngang trên điện thoại */
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+ max-height: 60vh !important; /* Giới hạn chiều cao an toàn trên di động */
+ overflow-y: auto !important; /* Cho phép cuộn dọc nội bộ bảng */
+ overflow-x: auto !important; /* Cho phép vuốt ngang trên điện thoại */
+ -webkit-overflow-scrolling: touch;
+ border: 1px solid #ddd;
+ border-radius: 6px;
 }
-/* ĐẢM BẢO TIÊU ĐỀ LUÔN NẰM TRÊN CÙNG KHI CUỘN NỘI BỘ VÙNG BẢNG */
+/* ĐẢM BẢO TIÊU ĐỀ CHẤM CÔNG LUÔN KHÓA CỨNG TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
 #attendance-section th, 
 #seasonal-section th {
-    position: sticky !important;
-    top: 0 !important;
-    background: #333 !important;
-    color: #fff !important;
-    z-index: 102 !important;
-    box-shadow: inset 0 -1px 0 #ddd;
+ position: sticky !important;
+ top: 0 !important;
+ background: #333 !important;
+ color: #fff !important;
+ z-index: 102 !important;
+ box-shadow: inset 0 -1px 0 #ddd;
 }
-
-/* TẠO VÙNG CUỘN DỌC VÀ CO GIÃN NGANG NỘI BỘ CHO BẢNG CHẤM CÔNG */
-#attendance-section div[style*="overflow-x"], 
-#seasonal-section div[style*="overflow-x"] {
-    max-height: 65vh !important; /* Giới hạn chiều cao bảng công vừa khít màn hình điện thoại */
-    overflow-y: auto !important;  /* Cho phép cuộn dọc nội bộ bảng */
-    overflow-x: auto !important;  /* Cho phép vuốt ngang co giãn trên điện thoại */
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #cbd5e1;
-    border-radius: 8px;
-    margin-top: 10px;
-}
-
-/* ÉP TRÌNH DUYỆT KHÓA CỨNG TIÊU ĐỀ LUÔN NẰM TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
-#attendance-section table thead tr th, 
-#seasonal-section table thead tr th {
-    position: sticky !important;
-    top: 0 !important;
-    background-color: #333333 !important;
-    color: #ffffff !important;
-    z-index: 110 !important;
-    box-shadow: inset 0 -1px 0 #ddd;
-}
-
-
 </style>
+
 </head>
 <body>
  <!-- MENU CHÍNH TỔNG (DASHBOARD) -->
@@ -638,6 +615,8 @@ function scrollDay() {
  
 // CẬP NHẬT HÀM GHIM TIÊU ĐỀ KHÔNG BỊ TRÔI MẤT KHI CUỘN
 function fixTh() { return; }
+function fixThTV() { return; }
+
  </script>
  <script>
  var todayTV = new Date(), curY_TV = todayTV.getFullYear(), curM_TV = todayTV.getMonth() + 1, curD_TV = todayTV.getDate(), idEmpTV = null, isSunTV = {};
@@ -741,24 +720,34 @@ function fixTh() { return; }
 
  </script>
  <script>
- function initCalendar() {
-     var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
-     var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate(), body = document.getElementById('calendarBody'); body.innerHTML = ""; var date = 1; var today = new Date();
-     for (var i = 0; i < 6; i++) {
-         var row = document.createElement('tr'); var hasCells = false;
-         for (var j = 0; j < 7; j++) {
-             var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
-             if (i === 0 && j < firstDay) { cell.innerHTML = ""; } else if (date > daysInMonth) { cell.innerHTML = ""; } else {
-                 hasCells = true; var al = getAmLich(date, month + 1, year); var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
-                 if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; }
-                 cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${al.aDay}</div>`; date++;
-             }
-             row.appendChild(cell);
-         }
-         if (!hasCells) break; body.appendChild(row);
-     }
-     renderKyNiem();
+ 
+// KHAI BÁO BIẾN NGÀY THÁNG LỊCH BỊ THIẾU TRONG FILE GỐC
+var calViewDate = new Date();
+
+// HÀM TÍNH ÂM LỊCH ĐƠN GIẢN ĐỂ KHÔNG BỊ LỖI CHẾT HÀM VẼ LỊCH
+function getAmLich(d, m, y) { return { aDay: d + "/" + m }; }
+
+function initCalendar() {
+ var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); 
+ document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
+ var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+ var body = document.getElementById('calendarBody'); body.innerHTML = ""; var date = 1; var today = new Date();
+ for (var i = 0; i < 6; i++) {
+ var row = document.createElement('tr'); var hasCells = false;
+ for (var j = 0; j < 7; j++) {
+ var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
+ if (i === 0 && j < firstDay) { cell.innerHTML = ""; } else if (date > daysInMonth) { cell.innerHTML = ""; } else {
+ hasCells = true; var al = getAmLich(date, month + 1, year); var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
+ if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; }
+ cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${al.aDay}</div>`; date++;
  }
+ row.appendChild(cell);
+ }
+ if (!hasCells) break; body.appendChild(row);
+ }
+ renderKyNiem();
+}
+
  function changeMonth(dir) { calViewDate.setMonth(calViewDate.getMonth() + dir); initCalendar(); }
  function goTodayCalendar() { calViewDate = new Date(); initCalendar(); }
  function addKyNiem() {
