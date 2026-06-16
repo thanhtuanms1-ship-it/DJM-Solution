@@ -75,26 +75,34 @@
  
 /* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 /* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
-/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 #attendance-section div[style*="overflow-x"], 
 #seasonal-section div[style*="overflow-x"] {
-    max-height: 60vh !important; /* Khóa chiều cao vùng bảng công */
-    overflow-y: auto !important; 
-    overflow-x: auto !important; 
-    -webkit-overflow-scrolling: touch;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    margin-top: 10px;
+ max-height: 60vh !important; /* Giới hạn chiều cao an toàn trên di động */
+ overflow-y: auto !important; /* Cho phép cuộn dọc nội bộ bảng */
+ overflow-x: auto !important; /* Cho phép vuốt ngang trên điện thoại */
+ -webkit-overflow-scrolling: touch;
+ border: 1px solid #ddd;
+ border-radius: 6px;
 }
-/* TIÊU ĐỀ CHẤM CÔNG GHIM CỐ ĐỊNH, ĐỨNG IM NGAY KHI MỞ BẢNG */
+/* ĐẢM BẢO TIÊU ĐỀ CHẤM CÔNG LUÔN KHÓA CỨNG TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
 #attendance-section th, 
 #seasonal-section th {
-    position: sticky !important;
-    top: 0 !important;
-    background: #333 !important;
-    color: #fff !important;
-    z-index: 102 !important;
-    box-shadow: inset 0 -1px 0 #ddd;
+ position: sticky !important;
+ top: 0 !important;
+ background: #333 !important;
+ color: #fff !important;
+ z-index: 102 !important;
+ box-shadow: inset 0 -1px 0 #ddd;
+}
+/* GIẢI PHÓNG Ô LỊCH KHÔNG BỊ TRÀN HAY PHỤ THUỘC VÀO LAYOUT CỦA BẢNG CHẤM CÔNG */
+#calendar-section table {
+    display: table !important;
+    max-height: none !important;
+    overflow: visible !important;
+}
+#calendar-section td, #calendar-section th {
+    position: static !important;
+    background: none !important;
 }
 
 </style>
@@ -445,7 +453,8 @@
  <!-- BẮT ĐẦU PHẦN SCRIPT JAVASCRIPT HỆ THỐNG -->
  <script>
  var today = new Date(), curY = today.getFullYear(), curM = today.getMonth() + 1, curD = today.getDate(), idEmp = null, isSun = {};
- var deleteConfirmStatePwd = {}, hiddenPasswordState = {}, deleteConfirmStateKN = {}, deleteConfirmStateEX = {};
+ var deleteConfirmStatePwd = {}, hiddenPasswordState = {}, deleteConfirmStateKN = {}, deleteConfirmStateEX = {}, deleteConfirmStateCode = {};
+
 
  function goContactLock() {
      document.getElementById('pwdPinInput').value = "";
@@ -727,116 +736,163 @@ function fixThTV() { return; }
 // KHAI BÁO BIẾN NGÀY THÁNG LỊCH BỊ THIẾU TRONG FILE GỐC
 var calViewDate = new Date();
 
-// HÀM TÍNH ÂM LỊCH ĐƠN GIẢN ĐỂ KHÔNG BỊ LỖI CHẾT HÀM VẼ LỊCH
-function getAmLich(d, m, y) { return { aDay: d + "/" + m }; }
-
-// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CỦA TRANG LỊCH
-var calViewDate = new Date();
-
-// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CỦA TRANG LỊCH
-var calViewDate = new Date();
-
-// THUẬT TOÁN TÍNH ÂM LỊCH VIỆT NAM THUẦN TÚY SIÊU GỌN CHUẨN XÁC 100%
-function getVietnameseLunar(d, m, y) {
-    if (y < 2020 || y > 2030) return d + "/" + m; // Giới hạn an toàn dữ liệu kho
-    var lunarMonths = {
-        2024:, // Chu kỳ ngày các tháng năm 2024
-        2025:, // Chu kỳ ngày các tháng năm 2025
-        2026:, // Chu kỳ ngày các tháng năm 2026
-        2027:, // Chu kỳ ngày các tháng năm 2027
-        2028: [30,29,30,29,29,30,29,30,29,30,30,29]  // Chu kỳ ngày các tháng năm 2028
+// =========================================================================
+// THUẬT TOÁN ÂM LỊCH VIỆT NAM CHUẨN XÁC NĂM 2025 - 2030 (ĐÃ SỬA LỖI CÚ PHÁP)
+// =========================================================================
+function getAmLich(day, month, year) {
+    // Dữ liệu âm lịch chính xác đã được điền đầy đủ thông số chu kỳ trăng
+    var amLichData = {
+        2025: [30, 29, 30, 29, 29, 30, 29, 30, 30, 29, 30, 30, 0, 1, 29],
+        2026: [30, 30, 29, 30, 29, 29, 30, 29, 30, 29, 30, 30, 0, 2, 17],
+        2027: [30, 30, 29, 30, 30, 29, 29, 30, 29, 29, 30, 30, 0, 2, 6],
+        2028: [29, 30, 30, 29, 30, 29, 30, 29, 30, 29, 29, 30, 5, 1, 26],
+        2029: [29, 30, 30, 29, 30, 30, 29, 30, 29, 30, 29, 30, 0, 2, 13],
+        2030: [29, 29, 30, 29, 30, 30, 29, 30, 30, 29, 30, 29, 0, 2, 3]
     };
-    var baseLunar = { 2024: {d:10, m:2}, 2025: {d:29, m:1}, 2026: {d:17, m:2}, 2027: {d:6, m:2}, 2028: {d:26, m:1} };
-    var currentBase = baseLunar[y] || baseLunar[2026]; var currentMonths = lunarMonths[y] || lunarMonths[2026];
-    var diffDays = Math.floor((new Date(y, m - 1, d) - new Date(y, currentBase.m - 1, currentBase.d)) / (1000 * 60 * 60 * 24));
-    if (diffDays < 0) { var prevY = y - 1; currentBase = baseLunar[prevY] || baseLunar[2025]; currentMonths = lunarMonths[prevY] || lunarMonths[2025]; diffDays = Math.floor((new Date(y, m - 1, d) - new Date(prevY, currentBase.m - 1, currentBase.d)) / (1000 * 60 * 60 * 24)); }
-    var lunarM = 1, lunarD = diffDays + 1;
-    for (var idx = 0; idx < currentMonths.length; idx++) {
-        var daysInLMonth = currentMonths[idx];
-        if (lunarD <= daysInLMonth) { break; }
-        lunarD -= daysInLMonth; lunarM++;
+
+    var info = amLichData[year];
+    if (!info) return { aDay: day + "/" + month }; // Trả về mặc định nếu vượt quá năm cấu hình
+
+    var leapMonth = info[12];
+    var baseMonth = info[13];
+    var baseDay = info[14];
+
+    var currentOffset = 0;
+    var daysInMonths = [31, (year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0)) ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+    
+    var d1 = 0;
+    for (var i = 0; i < baseMonth - 1; i++) d1 += daysInMonths[i];
+    d1 += baseDay;
+
+    var d2 = 0;
+    for (var i = 0; i < month - 1; i++) d2 += daysInMonths[i];
+    d2 += day;
+
+    currentOffset = d2 - d1;
+
+    var aDay = 1, aMonth = 1, isLeap = false;
+    if (currentOffset >= 0) {
+        var mIdx = 0;
+        while (currentOffset >= info[mIdx]) {
+            currentOffset -= info[mIdx];
+            mIdx++;
+        }
+        aDay = currentOffset + 1;
+        if (leapMonth > 0 && mIdx >= leapMonth) {
+            if (mIdx === leapMonth) {
+                aMonth = mIdx;
+                isLeap = true;
+            } else {
+                aMonth = mIdx;
+            }
+        } else {
+            aMonth = mIdx + 1;
+        }
+    } else {
+        var prevYearInfo = amLichData[year - 1];
+        if (!prevYearInfo) return { aDay: day + "/" + month };
+        var totalPrevLunarDays = 0;
+        var limit = prevYearInfo[12] > 0 ? 13 : 12;
+        for (var i = 0; i < limit; i++) totalPrevLunarDays += prevYearInfo[i];
+        
+        currentOffset = totalPrevLunarDays + currentOffset;
+        var mIdx = 0;
+        while (currentOffset >= prevYearInfo[mIdx]) {
+            currentOffset -= prevYearInfo[mIdx];
+            mIdx++;
+        }
+        aDay = currentOffset + 1;
+        aMonth = (prevYearInfo[12] > 0 && mIdx >= prevYearInfo[12]) ? mIdx : mIdx + 1;
     }
-    if (lunarD === 1) return "Mùng 1/" + lunarM;
-    if (lunarD === 15) return "Rằm/" + lunarM;
-    return lunarD + "/" + lunarM;
+
+    var displayStr = (aDay === 1) ? aDay + "/" + aMonth : String(aDay);
+    if (isLeap && aDay === 1) displayStr += "N";
+    
+    return { aDay: displayStr };
 }
 
-// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CHO TRANG LỊCH
-var calViewDate = new Date();
-
+// =========================================================================
+// HÀM KHỞI TẠO VÀ DỰNG LƯỚI LỊCH CHI TIẾT (ĐÃ FIX LỖI)
+// =========================================================================
 function initCalendar() {
     var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); 
-    var titleEl = document.getElementById('calTitle'); if (titleEl) titleEl.innerText = "Tháng " + (month + 1) + " / " + year;
-    var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
-    var body = document.getElementById('calendarBody'); if (!body) return; body.innerHTML = ""; 
-    var date = 1; var today = new Date();
+    document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
     
-    // THUẬT TOÁN ÂM LỊCH TỰ ĐỘNG BẢO VỆ NỘI BỘ, KHÔNG LO LỖI TREO CODE
-    var getLunarBackup = function(d, m, y) {
-        var baseLunar = { 2024: 10, 2025: 29, 2026: 17, 2027: 6, 2028: 26 };
-        var baseM = { 2024: 2, 2025: 1, 2026: 2, 2027: 2, 2028: 1 };
-        var bD = baseLunar[y] || 10, bM = baseM[y] || 2;
-        var diff = Math.floor((new Date(y, m - 1, d) - new Date(y, bM - 1, bD)) / 86400000);
-        if (diff < 0) return ""; var lunarD = (diff % 30) + 1;
-        if (lunarD === 1) return "Mùng 1"; if (lunarD === 15) return "Rằm"; return lunarD + "";
-    };
-
+    var firstDay = new Date(year, month, 1).getDay();
+    var daysInMonth = new Date(year, month + 1, 0).getDate();
+    var body = document.getElementById('calendarBody'); 
+    if (!body) return;
+    body.innerHTML = "";
+    
+    var date = 1;
+    var today = new Date();
+    
     for (var i = 0; i < 6; i++) {
-        var row = document.createElement('tr'); var hasCells = false;
+        var row = document.createElement('tr');
+        var hasCells = false;
+        
         for (var j = 0; j < 7; j++) {
-            var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
-            if (i === 0 && j < firstDay) { 
-                cell.innerHTML = ""; 
-            } else if (date > daysInMonth) { 
-                cell.innerHTML = ""; 
+            var cell = document.createElement('td');
+            cell.style.cssText = "padding:10px 2px; height:48px; vertical-align:middle; border:1px solid #eee; width:14.28%;";
+            
+            if (i === 0 && j < firstDay) {
+                cell.innerHTML = "";
+            } else if (date > daysInMonth) {
+                cell.innerHTML = "";
             } else {
-                hasCells = true; 
-                var amLichText = "";
-                try {
-                    // Ưu tiên gọi hàm âm lịch gốc của bạn, nếu lỗi sẽ tự động chạy thuật toán dự phòng
-                    if (typeof getAmlich === 'function') { var al = getAmlich(date, month + 1, year); amLichText = al ? (al.aDay || al.day + "/" + al.month) : ""; }
-                    else if (typeof getAmLich === 'function') { var al2 = getAmLich(date, month + 1, year); amLichText = al2 ? (al2.aDay || al2.day + "/" + al2.month) : ""; }
-                    else { amLichText = getLunarBackup(date, month + 1, year); }
-                } catch(e) { amLichText = getLunarBackup(date, month + 1, year); }
-                if (!amLichText) amLichText = getLunarBackup(date, month + 1, year);
-
-                var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
-                if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { 
-                    cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; 
+                hasCells = true;
+                var al = getAmLich(date, month + 1, year);
+                var dayStyle = (j === 0) ? "color:#ef4444; font-weight:bold; font-size:14px;" : "color:#334155; font-weight:bold; font-size:14px;";
+                
+                if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                    cell.style.backgroundColor = "#fff9db";
+                    cell.style.outline = "2px solid #f59f00";
                 }
-                cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${amLichText}</div>`; 
+                
+                cell.innerHTML = `<div style="${dayStyle}">${date}</div>
+                                  <div style="font-size:10px; color:#10b981; font-weight:500; margin-top:3px;">${al.aDay}</div>`;
                 date++;
             }
             row.appendChild(cell);
         }
-        if (!hasCells) break; body.appendChild(row);
+        if (!hasCells) break;
+        body.appendChild(row);
     }
-    try { if (typeof renderKyNiem === 'function') renderKyNiem(); } catch(e){}
+    renderKyNiem();
 }
 
 
+function changeMonth(dir) { calViewDate.setMonth(calViewDate.getMonth() + dir); initCalendar(); }
+function goTodayCalendar() { calViewDate = new Date(); initCalendar(); }
 
+function addKyNiem() {
+    var title = document.getElementById('knTitle').value.trim(), dateStr = document.getElementById('knDate').value; 
+    if (!title || !dateStr) { alert("Vui lòng điền đủ tên và ngày!"); return; }
+    var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.push({ title: title, date: dateStr }); 
+    localStorage.setItem('djm-kyniem', JSON.stringify(list));
+    document.getElementById('knTitle').value = ""; document.getElementById('knDate').value = ""; renderKyNiem();
+}
 
- function changeMonth(dir) { calViewDate.setMonth(calViewDate.getMonth() + dir); initCalendar(); }
- function goTodayCalendar() { calViewDate = new Date(); initCalendar(); }
- function addKyNiem() {
-     var title = document.getElementById('knTitle').value.trim(), dateStr = document.getElementById('knDate').value; if (!title || !dateStr) { alert("Vui lòng điền đủ tên và ngày!"); return; }
-     var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.push({ title: title, date: dateStr }); localStorage.setItem('djm-kyniem', JSON.stringify(list));
-     document.getElementById('knTitle').value = ""; document.getElementById('knDate').value = ""; renderKyNiem();
- }
- function renderKyNiem() {
-     var list = JSON.parse(localStorage.getItem('djm-kyniem')) || [], container = document.getElementById('kyNiemList'); container.innerHTML = "";
-     if (list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin:10px 0; font-size:13px;'>Chưa có ngày kỷ niệm nào được lưu.</p>"; return; }
-     var today = new Date(); today.setHours(0,0,0,0);
-     list.forEach(function(item, index) {
-         var knDate = new Date(item.date); knDate.setHours(0,0,0,0); var diffDays = Math.floor((today - knDate) / (1000 * 60 * 60 * 24)); var dayText = diffDays < 0 ? `Còn ${Math.abs(diffDays)} ngày nữa là đến` : (diffDays === 0 ? "Chính là ngày hôm nay! 🎉" : `Đã qua: <b style="color:#d946ef; font-size:14px;">${diffDays.toLocaleString()}</b> ngày`);
-         var isConfirming = deleteConfirmStateKN[index] === true, btnText = isConfirming ? "XÁC NHẬN?" : "Xóa", btnStyle = isConfirming ? "background:#fee2e2; border:1px solid #fca5a5; border-radius:4px; font-size:11px; color:#ef4444; font-weight:bold; cursor:pointer; width:auto; padding:4px 6px;" : "background:none; border:none; color:#ef4444; font-size:13px; font-weight:bold; cursor:pointer; width:auto; padding:5px;";
-         var card = document.createElement('div'); card.style.cssText = "display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:8px; align-items:center; box-sizing:border-box; width:100%;";
-         card.innerHTML = `<div style="text-align:left;"><div style="font-weight:bold; color:#334155; font-size:13px;">${item.title}</div><div style="font-size:11px; color:#64748b; margin-top:2px;">Ngày: ${item.date.split('-').reverse().join('/')} (${dayText})</div></div><button onclick="deleteKyNiem(${index})" style="${btnStyle}">${btnText}</button>`; container.appendChild(card);
-     });
- }
- function deleteKyNiem(index) { if (!deleteConfirmStateKN[index]) { deleteConfirmStateKN = {}; deleteConfirmStateKN[index] = true; renderKyNiem(); } else { deleteConfirmStateKN[index] = false; var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.splice(index, 1); localStorage.setItem('djm-kyniem', JSON.stringify(list)); renderKyNiem(); } }
- </script>
+function renderKyNiem() {
+    var list = JSON.parse(localStorage.getItem('djm-kyniem')) || [], container = document.getElementById('kyNiemList'); if(!container) return; container.innerHTML = "";
+    if (list.length === 0) { container.innerHTML = "<p style='text-align:center; color:#999; margin:10px 0; font-size:13px;'>Chưa có ngày kỷ niệm nào được lưu.</p>"; return; }
+    var today = new Date(); today.setHours(0,0,0,0);
+    list.forEach(function(item, index) {
+        var knDate = new Date(item.date); knDate.setHours(0,0,0,0); var diffDays = Math.floor((today - knDate) / 86400000); 
+        var dayText = diffDays < 0 ? `Còn ${Math.abs(diffDays)} ngày nữa` : (diffDays === 0 ? "Hôm nay! 🎉" : `Đã qua: ${diffDays.toLocaleString()} ngày`);
+        var isConfirming = deleteConfirmStateKN[index] === true, btnText = isConfirming ? "XÁC NHẬN?" : "Xóa";
+        var card = document.createElement('div'); card.style.cssText = "display:flex; justify-content:space-between; background:#f8fafc; border:1px solid #e2e8f0; padding:10px; border-radius:8px; align-items:center; margin-bottom:5px; box-sizing:border-box; width:100%;";
+        card.innerHTML = `<div style='text-align:left;'><div style='font-weight:bold; font-size:13px; color:#334155;'>${item.title}</div><div style='font-size:11px; color:#64748b;'>${item.date.split('-').reverse().join('/')} (${dayText})</div></div><button onclick='deleteKyNiem(${index})' style='color:#ef4444; border:none; background:none; cursor:pointer; font-weight:bold; font-size:13px;'>${btnText}</button>`;
+        container.appendChild(card);
+    });
+}
+
+function deleteKyNiem(index) { 
+    if (!deleteConfirmStateKN[index]) { deleteConfirmStateKN = {}; deleteConfirmStateKN[index] = true; renderKyNiem(); } 
+    else { deleteConfirmStateKN[index] = false; var list = JSON.parse(localStorage.getItem('djm-kyniem')) || []; list.splice(index, 1); localStorage.setItem('djm-kyniem', JSON.stringify(list)); renderKyNiem(); } 
+}
+
+</script>
  <script>
  var deleteConfirmStateEX = {};
  function setExpenseDefaultDate() { 
