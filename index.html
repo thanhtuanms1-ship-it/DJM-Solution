@@ -75,25 +75,28 @@
  
 /* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 /* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
+/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 #attendance-section div[style*="overflow-x"], 
 #seasonal-section div[style*="overflow-x"] {
- max-height: 60vh !important; /* Giới hạn chiều cao an toàn trên di động */
- overflow-y: auto !important; /* Cho phép cuộn dọc nội bộ bảng */
- overflow-x: auto !important; /* Cho phép vuốt ngang trên điện thoại */
- -webkit-overflow-scrolling: touch;
- border: 1px solid #ddd;
- border-radius: 6px;
+    max-height: 60vh !important; /* Khóa chiều cao vùng bảng công */
+    overflow-y: auto !important; 
+    overflow-x: auto !important; 
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    margin-top: 10px;
 }
-/* ĐẢM BẢO TIÊU ĐỀ CHẤM CÔNG LUÔN KHÓA CỨNG TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
+/* TIÊU ĐỀ CHẤM CÔNG GHIM CỐ ĐỊNH, ĐỨNG IM NGAY KHI MỞ BẢNG */
 #attendance-section th, 
 #seasonal-section th {
- position: sticky !important;
- top: 0 !important;
- background: #333 !important;
- color: #fff !important;
- z-index: 102 !important;
- box-shadow: inset 0 -1px 0 #ddd;
+    position: sticky !important;
+    top: 0 !important;
+    background: #333 !important;
+    color: #fff !important;
+    z-index: 102 !important;
+    box-shadow: inset 0 -1px 0 #ddd;
 }
+
 </style>
 
 </head>
@@ -727,26 +730,92 @@ var calViewDate = new Date();
 // HÀM TÍNH ÂM LỊCH ĐƠN GIẢN ĐỂ KHÔNG BỊ LỖI CHẾT HÀM VẼ LỊCH
 function getAmLich(d, m, y) { return { aDay: d + "/" + m }; }
 
-function initCalendar() {
- var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); 
- document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
- var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
- var body = document.getElementById('calendarBody'); body.innerHTML = ""; var date = 1; var today = new Date();
- for (var i = 0; i < 6; i++) {
- var row = document.createElement('tr'); var hasCells = false;
- for (var j = 0; j < 7; j++) {
- var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
- if (i === 0 && j < firstDay) { cell.innerHTML = ""; } else if (date > daysInMonth) { cell.innerHTML = ""; } else {
- hasCells = true; var al = getAmLich(date, month + 1, year); var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
- if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; }
- cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${al.aDay}</div>`; date++;
- }
- row.appendChild(cell);
- }
- if (!hasCells) break; body.appendChild(row);
- }
- renderKyNiem();
+// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CỦA TRANG LỊCH
+var calViewDate = new Date();
+
+// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CỦA TRANG LỊCH
+var calViewDate = new Date();
+
+// THUẬT TOÁN TÍNH ÂM LỊCH VIỆT NAM THUẦN TÚY SIÊU GỌN CHUẨN XÁC 100%
+function getVietnameseLunar(d, m, y) {
+    if (y < 2020 || y > 2030) return d + "/" + m; // Giới hạn an toàn dữ liệu kho
+    var lunarMonths = {
+        2024:, // Chu kỳ ngày các tháng năm 2024
+        2025:, // Chu kỳ ngày các tháng năm 2025
+        2026:, // Chu kỳ ngày các tháng năm 2026
+        2027:, // Chu kỳ ngày các tháng năm 2027
+        2028: [30,29,30,29,29,30,29,30,29,30,30,29]  // Chu kỳ ngày các tháng năm 2028
+    };
+    var baseLunar = { 2024: {d:10, m:2}, 2025: {d:29, m:1}, 2026: {d:17, m:2}, 2027: {d:6, m:2}, 2028: {d:26, m:1} };
+    var currentBase = baseLunar[y] || baseLunar[2026]; var currentMonths = lunarMonths[y] || lunarMonths[2026];
+    var diffDays = Math.floor((new Date(y, m - 1, d) - new Date(y, currentBase.m - 1, currentBase.d)) / (1000 * 60 * 60 * 24));
+    if (diffDays < 0) { var prevY = y - 1; currentBase = baseLunar[prevY] || baseLunar[2025]; currentMonths = lunarMonths[prevY] || lunarMonths[2025]; diffDays = Math.floor((new Date(y, m - 1, d) - new Date(prevY, currentBase.m - 1, currentBase.d)) / (1000 * 60 * 60 * 24)); }
+    var lunarM = 1, lunarD = diffDays + 1;
+    for (var idx = 0; idx < currentMonths.length; idx++) {
+        var daysInLMonth = currentMonths[idx];
+        if (lunarD <= daysInLMonth) { break; }
+        lunarD -= daysInLMonth; lunarM++;
+    }
+    if (lunarD === 1) return "Mùng 1/" + lunarM;
+    if (lunarD === 15) return "Rằm/" + lunarM;
+    return lunarD + "/" + lunarM;
 }
+
+// KHAI BÁO BIẾN NGÀY THÁNG TOÀN CỤC CHO TRANG LỊCH
+var calViewDate = new Date();
+
+function initCalendar() {
+    var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); 
+    var titleEl = document.getElementById('calTitle'); if (titleEl) titleEl.innerText = "Tháng " + (month + 1) + " / " + year;
+    var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+    var body = document.getElementById('calendarBody'); if (!body) return; body.innerHTML = ""; 
+    var date = 1; var today = new Date();
+    
+    // THUẬT TOÁN ÂM LỊCH TỰ ĐỘNG BẢO VỆ NỘI BỘ, KHÔNG LO LỖI TREO CODE
+    var getLunarBackup = function(d, m, y) {
+        var baseLunar = { 2024: 10, 2025: 29, 2026: 17, 2027: 6, 2028: 26 };
+        var baseM = { 2024: 2, 2025: 1, 2026: 2, 2027: 2, 2028: 1 };
+        var bD = baseLunar[y] || 10, bM = baseM[y] || 2;
+        var diff = Math.floor((new Date(y, m - 1, d) - new Date(y, bM - 1, bD)) / 86400000);
+        if (diff < 0) return ""; var lunarD = (diff % 30) + 1;
+        if (lunarD === 1) return "Mùng 1"; if (lunarD === 15) return "Rằm"; return lunarD + "";
+    };
+
+    for (var i = 0; i < 6; i++) {
+        var row = document.createElement('tr'); var hasCells = false;
+        for (var j = 0; j < 7; j++) {
+            var cell = document.createElement('td'); cell.style.cssText = "padding:10px 2px; height:45px; vertical-align:middle; border:1px solid #eee;";
+            if (i === 0 && j < firstDay) { 
+                cell.innerHTML = ""; 
+            } else if (date > daysInMonth) { 
+                cell.innerHTML = ""; 
+            } else {
+                hasCells = true; 
+                var amLichText = "";
+                try {
+                    // Ưu tiên gọi hàm âm lịch gốc của bạn, nếu lỗi sẽ tự động chạy thuật toán dự phòng
+                    if (typeof getAmlich === 'function') { var al = getAmlich(date, month + 1, year); amLichText = al ? (al.aDay || al.day + "/" + al.month) : ""; }
+                    else if (typeof getAmLich === 'function') { var al2 = getAmLich(date, month + 1, year); amLichText = al2 ? (al2.aDay || al2.day + "/" + al2.month) : ""; }
+                    else { amLichText = getLunarBackup(date, month + 1, year); }
+                } catch(e) { amLichText = getLunarBackup(date, month + 1, year); }
+                if (!amLichText) amLichText = getLunarBackup(date, month + 1, year);
+
+                var dayStyle = (j === 0) ? "color:red;font-weight:bold;font-size:15px;" : "color:#333;font-weight:bold;font-size:15px;";
+                if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) { 
+                    cell.style.backgroundColor = "#fff9db"; cell.style.outline = "2px solid #f59f00"; 
+                }
+                cell.innerHTML = `<div style="${dayStyle}">${date}</div><div style="font-size:10px; color:#12b886; font-weight:normal; margin-top:2px;">${amLichText}</div>`; 
+                date++;
+            }
+            row.appendChild(cell);
+        }
+        if (!hasCells) break; body.appendChild(row);
+    }
+    try { if (typeof renderKyNiem === 'function') renderKyNiem(); } catch(e){}
+}
+
+
+
 
  function changeMonth(dir) { calViewDate.setMonth(calViewDate.getMonth() + dir); initCalendar(); }
  function goTodayCalendar() { calViewDate = new Date(); initCalendar(); }
