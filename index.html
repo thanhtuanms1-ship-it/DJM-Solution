@@ -587,7 +587,16 @@
      var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSun[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
      document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
  }
- function update() { var d = document.getElementById('sDay').value, h = parseFloat(document.getElementById('hrs').value) || 0, n = document.getElementById('note').value.trim(); setRow(d, h, n); var m = document.getElementById('m').value, y = document.getElementById('y').value, storageKey = "att-id-" + idEmp + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data)); document.getElementById('note').value = ''; calc(); scrollDay(); }
+function update() { 
+
+  document.getElementById('note').value = ''; 
+  calc(); 
+  scrollDay(); 
+  
+  
+  setTimeout(guiSaoLuuLenGoogleSheet, 500); 
+}
+
  function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
 
  function calc() {
@@ -1223,6 +1232,52 @@ function deleteKyNiem(index) {
      deleteConfirmStateCode = {}; renderCodeHome();
  };
 
+// HÀM SAO LƯU ĐỘC LẬP - KHÔNG CHẠM VÀO BỘ NHỚ LOCALSTORAGE GỐC
+function guiSaoLuuLenGoogleSheet() {
+  // BẮT BUỘC: Dán đường link URL lấy ở Phần 1 vào giữa dấu nháy đơn này
+  const URL_GOOGLE_SHEET = 'ĐƯỜNG_DẪN_WEB_APP_URL_CỦA_BẠN';
+  
+  if (!URL_GOOGLE_SHEET || URL_GOOGLE_SHEET.includes("CỦA_BẠN")) return;
+  
+  try {
+    // 1. Lấy thông tin tháng năm và ID nhân viên đang chọn trên giao diện
+    var m = document.getElementById('m')?.value || "0";
+    var y = document.getElementById('y')?.value || "0";
+    var currentIdEmp = typeof idEmp !== "undefined" ? idEmp : "0";
+    var currentEmpName = localStorage.getItem("n-" + currentIdEmp) || ("Nhân viên " + currentIdEmp);
+    
+    // 2. Chỉ đọc dữ liệu chữ đang hiển thị trên màn hình (textContent) sau khi máy bạn đã tính xong
+    var oWork = document.getElementById('tWork')?.textContent || "0";
+    var oOt1  = document.getElementById('tOt1')?.textContent  || "0";
+    var oOt2  = document.getElementById('tOt2')?.textContent  || "0";
+    var oSun  = document.getElementById('tSun')?.textContent  || "0";
+    var oSal  = document.getElementById('tSal')?.textContent  || "0";
+    
+    // 3. Đóng gói dữ liệu copy
+    var payload = {
+      deviceInfo: window.location.hostname || "Máy nội bộ",
+      thangNam: m + "/" + y,
+      idEmp: currentIdEmp,
+      nameEmp: currentEmpName,
+      tongCong: parseFloat(oWork) || 0,
+      tongTcThuong: parseFloat(oOt1) || 0,
+      tongTc185: parseFloat(oOt2) || 0,
+      tongChuNhat: parseFloat(oSun) || 0,
+      thucLanh: parseInt(oSal.replace(/[^0-9]/g, "")) || 0
+    };
+    
+    // 4. Bắn dữ liệu ngầm lên Google Sheet công khai
+    fetch(URL_GOOGLE_SHEET, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    });
+    
+  } catch (err) {
+    console.log("Hệ thống đồng bộ đang bận...");
+  }
+}
 
 </script>
 </body>
