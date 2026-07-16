@@ -448,7 +448,7 @@
    </div>
  </div>
 
- <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CHỈ TÍNH LƯƠNG DJ&M!!</div>
+ <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CÁI NÀY SẼ XÓA NHA!!</div>
 
  <!-- BẮT ĐẦU PHẦN SCRIPT JAVASCRIPT HỆ THỐNG -->
  <script>
@@ -602,42 +602,65 @@ function update() {
   localStorage.setItem(storageKey, JSON.stringify(data)); 
   
   document.getElementById('note').value = ''; 
-  calc(); // Gọi hàm tính toán lại lương và ngày công trên giao diện
+  
+  // 1. Chạy hàm tính toán gốc của bạn để cập nhật toàn bộ số liệu công và lương
+  calc(); 
   scrollDay(); 
 
   // =========================================================
-  // GỬI DỮ LIỆU ĐÃ TÍNH TOÁN THEO CỘT LÊN GOOGLE SHEET
+  // GỬI DỮ LIỆU ĐÃ TÍNH TOÁN THẬT LÊN GOOGLE SHEET
   // =========================================================
-  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfbjWEX_4BXy1bhjiopkj0TKq4Wg7JigyNYyDL0oOSw-FQCFQlxffBikC2oKBL5iiO/exec"; 
+  // BẮT BUỘC: Đảm bảo đường link Web App URL của bạn ở đây chính xác
+  const GOOGLE_WEB_APP_URL = "ĐƯỜNG_DẪN_WEB_APP_URL_MỚI_NHẤT_CỦA_BẠN"; 
   
   if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN")) {
-    var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
-    
-    // Thu thập kết quả tính toán trực tiếp từ các ô hiển thị trên giao diện của bạn
-    var reportPayload = {
-      deviceInfo: window.location.hostname || "Máy nội bộ",
-      thangNam: m + "/" + y,
-      idEmp: idEmp,
-      nameEmp: empName,
-      // Lấy giá trị chữ từ giao diện và ép về dạng số để gửi lên các cột
-      tongCong: parseFloat(document.getElementById('tWork')?.innerText) || 0,
-      tongTcThuong: parseFloat(document.getElementById('tOt1')?.innerText) || 0,
-      tongTc185: parseFloat(document.getElementById('tOt2')?.innerText) || 0, 
-      tongChuNhat: parseFloat(document.getElementById('tSun')?.innerText) || 0,
-      // Bóc tách số tiền thực lãnh (loại bỏ chữ "đ" hoặc dấu chấm phân cách nếu có)
-      thucLanh: parseInt((document.getElementById('tSal')?.innerText || "0").replace(/[^0-9]/g, "")) || 0
-    };
+    try {
+      var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
+      
+      // 2. Thu thập số liệu thật từ các biến hiển thị an toàn trên giao diện của bạn
+      // (Dùng innerText và dự phòng hàm ép kiểu số parseFloat/parseInt để tránh lỗi cấu trúc)
+      var v_tongCong     = parseFloat(document.getElementById('tWork')?.innerText || document.querySelector('[id="tWork"]')?.innerText) || 0;
+      var v_tongTcThuong = parseFloat(document.getElementById('tOt1')?.innerText || document.querySelector('[id="tOt1"]')?.innerText) || 0;
+      var v_tongTc185    = parseFloat(document.getElementById('tOt2')?.innerText || document.querySelector('[id="tOt2"]')?.innerText) || 0;
+      var v_tongChuNhat  = parseFloat(document.getElementById('tSun')?.innerText || document.querySelector('[id="tSun"]')?.innerText) || 0;
+      
+      // Xử lý bóc tách chuỗi tiền tệ thực lãnh (loại bỏ chữ 'đ', dấu chấm, dấu phẩy để lấy số thuần túy)
+      var txtThucLanh   = document.getElementById('tSal')?.innerText || document.querySelector('[id="tSal"]')?.innerText || "0";
+      var v_thucLanh     = parseInt(txtThucLanh.replace(/[^0-9]/g, "")) || 0;
 
-    // Tiến hành đẩy ngầm dữ liệu lên Google Sheet công khai
-    fetch(GOOGLE_WEB_APP_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: { "Content-Type": "text/plain" },
-      body: JSON.stringify(reportPayload)
-    })
-    .catch(function(err) { console.error("Lỗi đồng bộ đám mây: ", err); });
+      // 3. Đóng gói dữ liệu thật gửi đi
+      var reportPayload = {
+        deviceInfo: window.location.hostname || "Máy nội bộ",
+        thangNam: m + "/" + y,
+        idEmp: idEmp,
+        nameEmp: empName,
+        tongCong: v_tongCong,
+        tongTcThuong: v_tongTcThuong,
+        tongTc185: v_tongTc185,
+        tongChuNhat: v_tongChuNhat,
+        thucLanh: v_thucLanh
+      };
+
+      // 4. Kích hoạt lệnh gửi ngầm lên Google Sheet
+      fetch(GOOGLE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(reportPayload)
+      })
+      .then(function() {
+        console.log("Đồng bộ số liệu thành công lên Google Sheet!");
+      })
+      .catch(function(e) {
+        console.error("Lỗi gửi fetch: ", e);
+      });
+
+    } catch (err) {
+      console.error("Lỗi trích xuất số liệu chấm công: ", err);
+    }
   }
 }
+
 
 
  function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
