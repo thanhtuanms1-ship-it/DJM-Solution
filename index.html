@@ -73,7 +73,8 @@
  .col-note { flex: 1; text-align: left; font-size: 11px; color: #1e293b; padding: 0 6px; word-break: break-all; line-height: 1.3; }
  .col-action { flex: 0 0 14%; text-align: center; display: flex; justify-content: center; }
  
-
+/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
+/* ÉP ĐỘ CAO CHO KHU VỰC BẢNG ĐỂ TIÊU ĐỀ STICKY HOẠT ĐỘNG TRÊN MOBILE */
 #attendance-section div[style*="overflow-x"], 
 #seasonal-section div[style*="overflow-x"] {
  max-height: 60vh !important; /* Giới hạn chiều cao an toàn trên di động */
@@ -83,7 +84,7 @@
  border: 1px solid #ddd;
  border-radius: 6px;
 }
-
+/* ĐẢM BẢO TIÊU ĐỀ CHẤM CÔNG LUÔN KHÓA CỨNG TRÊN CÙNG TỪ GIÂY ĐẦU TIÊN */
 #attendance-section th, 
 #seasonal-section th {
  position: sticky !important;
@@ -93,7 +94,7 @@
  z-index: 102 !important;
  box-shadow: inset 0 -1px 0 #ddd;
 }
-
+/* GIẢI PHÓNG Ô LỊCH KHÔNG BỊ TRÀN HAY PHỤ THUỘC VÀO LAYOUT CỦA BẢNG CHẤM CÔNG */
 #calendar-section table {
     display: table !important;
     max-height: none !important;
@@ -108,7 +109,7 @@
 
 </head>
 <body>
- 
+ <!-- MENU CHÍNH TỔNG (DASHBOARD) -->
  <div id="main-dashboard" class="app-section active">
    <div class="db-container">
      <h1 style="color:#1e293b; font-size:26px; margin:20px 0 5px 0; font-weight:bold;">HỆ THỐNG QUẢN LÝ DJ&M</h1>
@@ -136,7 +137,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG CHẤM CÔNG HÀNH CHÍNH -->
  <div id="attendance-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')"> Menu Chính ⬅</button></div>
    <div class="box">
@@ -172,7 +173,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG CHẤM CÔNG THỜI VỤ -->
  <div id="seasonal-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')"> Menu Chính ⬅</button></div>
    <div class="box">
@@ -210,7 +211,7 @@
      </div>
    </div>
  </div>
- 
+ <!-- MÀN HÌNH KHÓA BẢO MẬT TRANG QUẢN TRỊ ẨN -->
  <div id="password-lock-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
      <button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')"> Menu Chính ⬅</button>
@@ -231,7 +232,7 @@
        <h4 style="margin: 0 0 12px 0; color: #334155; font-size: 14px; text-align: center; text-transform: uppercase;">Đổi Mật Khẩu Truy Cập</h4>
        <div style="display: flex; align-items: center; margin-bottom: 8px;">
          <label style="width: 110px; font-size: 12px; font-weight: bold; color: #475569;">Mật khẩu cũ:</label>
-         <input type="password" id="oldPinInp" placeholder="nhập mật khẩu" style="flex-grow: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
+         <input type="password" id="oldPinInp" placeholder="Cũ (Gốc: 0109)" style="flex-grow: 1; padding: 6px 10px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 13px;">
        </div>
        <div style="display: flex; align-items: center; margin-bottom: 12px;">
          <label style="width: 110px; font-size: 12px; font-weight: bold; color: #475569;">Mật khẩu mới:</label>
@@ -242,7 +243,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG THÔNG TIN LIÊN HỆ ẨN CHỨA 3 NÚT CHỨC NĂNG -->
  <div id="contact-secret-section" class="app-section" style="padding: 20px; box-sizing: border-box;">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
      <button class="btn-to-dashboard" onclick="switchScreen('password-lock-section')"> Quay Lại Khóa ⬅</button>
@@ -263,7 +264,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG XEM LỊCH & KỶ NIỆM -->
  <div id="calendar-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')"> Menu Chính ⬅</button></div>
    <div class="kk-container" style="max-width: 600px;">
@@ -292,7 +293,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG QUẢN LÝ CHI TIÊU THU CHI -->
  <div id="expense-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('main-dashboard')"> Menu Chính ⬅</button></div>
    <div class="kk-container" style="max-width: 550px;">
@@ -326,7 +327,7 @@
      </div>
    </div>
  </div>
- 
+ <!-- TRANG KIỂM KÊ TỒN KHO -->
  <div id="inventory-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button></div>
    <div class="kk-container" id="mainContainer">
@@ -358,7 +359,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG SỔ GHI NỢ -->
  <div id="debt-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button></div>
    <div class="box">
@@ -388,7 +389,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG SỔ LƯU MẬT KHẨU -->
  <div id="password-manager-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;"><button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button></div>
    <div class="kk-container" style="max-width: 550px; margin-top: 10px; padding: 15px 10px; background:#fff;">
@@ -405,7 +406,7 @@
    </div>
  </div>
 
- 
+ <!-- TRANG CON: TRA CỨU & QUY ĐỔI MÃ NỘI BỘ (TỰ CO GIÃN CHỐNG TRÀN) -->
  <div id="code-converter-section" class="app-section">
    <div style="max-width: 1200px; margin: 0 auto; padding: 0 10px;">
      <button class="btn-to-dashboard" onclick="switchScreen('contact-secret-section')"> Quay Lại ⬅</button>
@@ -413,21 +414,21 @@
    <div class="kk-container" style="max-width: 550px; margin-top: 10px; padding: 15px 10px; background:#fff;">
      <h2 style="margin-bottom:15px; color:#1e293b; text-align:center;">Tra Cứu NVL</h2>
      
-     
+     <!-- KHU VỰC TRA CỨU BIẾN ĐỘNG THỜI GIAN THỰC -->
      <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:12px; border-radius:10px; margin-bottom:20px;">
        <label style="display:block; font-size:12px; font-weight:bold; color:#1e293b; margin-bottom:6px;">🔍 NHẬP MÃ ĐỂ TRA CỨU:</label>
        <input type="text" id="codeSearchInp" oninput="liveSearchCode()" placeholder="Gõ mã cần dò tìm..." style="width:100%; padding:10px; border:1px solid #007bff; border-radius:6px; font-size:15px; box-sizing:border-box; background:#fff;">
        
-       
+       <!-- KHU VỰC KẾT QUẢ HIỂN THỊ ĐỘC LẬP 3 DÒNG THEO YÊU CẦU -->
        <div id="codeSearchResultBox" style="margin-top:10px; padding:0; display:none; flex-direction:column; gap:8px;"></div>
      </div>
 
-     
+     <!-- KHU VỰC NHẬP DỮ LIỆU CẶP MÃ QUY ĐỔI -->
        <div class="db-inline-row" style="margin-bottom: 2px;">
        <label>Mã gốc</label>
        <input type="text" id="codeOriginalInp" oninput="checkDuplicateCode()" placeholder="Ví dụ: 893456...">
      </div>
-     
+     <!-- DÒNG CHỮ ĐỎ CẢNH BÁO TRÙNG MÃ ẨN MẶC ĐỊNH -->
      <div id="codeDuplicateAlert" style="display:none; color:#ef4444; font-size:11px; font-weight:bold; margin-left:105px; margin-bottom:10px; text-align:left; line-height:1.2;"></div>
 
      <div class="db-inline-row"><label>Mã nội bộ</label><input type="text" id="codeInternalInp" placeholder="Ví dụ: TM-01..."></div>
@@ -447,9 +448,9 @@
    </div>
  </div>
 
- <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CÁI NÀY MỚI NHA!!!</div>
+ <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CÁI NÀY SẼ XÓA NHA!!</div>
 
- 
+ <!-- BẮT ĐẦU PHẦN SCRIPT JAVASCRIPT HỆ THỐNG -->
  <script>
  var today = new Date(), curY = today.getFullYear(), curM = today.getMonth() + 1, curD = today.getDate(), idEmp = null, isSun = {};
  var deleteConfirmStatePwd = {}, hiddenPasswordState = {}, deleteConfirmStateKN = {}, deleteConfirmStateEX = {}, deleteConfirmStateCode = {};
@@ -586,7 +587,59 @@
      var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSun[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
      document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
  }
- function update() { var d = document.getElementById('sDay').value, h = parseFloat(document.getElementById('hrs').value) || 0, n = document.getElementById('note').value.trim(); setRow(d, h, n); var m = document.getElementById('m').value, y = document.getElementById('y').value, storageKey = "att-id-" + idEmp + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data)); document.getElementById('note').value = ''; calc(); scrollDay(); }
+function update() { 
+  var d = document.getElementById('sDay').value;
+  var h = parseFloat(document.getElementById('hrs').value) || 0;
+  var n = document.getElementById('note').value.trim(); 
+  setRow(d, h, n); 
+  
+  var m = document.getElementById('m').value;
+  var y = document.getElementById('y').value;
+  var storageKey = "att-id-" + idEmp + "-" + m + "-" + y;
+  var data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; 
+  
+  data[d] = { hrs: h, note: n }; 
+  localStorage.setItem(storageKey, JSON.stringify(data)); 
+  
+  document.getElementById('note').value = ''; 
+  calc(); 
+  scrollDay(); 
+
+  // ==========================================
+  // PHẦN THÊM MỚI: TỰ ĐỘNG ĐẨY DỮ LIỆU LÊN GOOGLE SHEET
+  // ==========================================
+  
+  // Dán cái đường link Web App URL lấy ở Bước 1 vào đây:
+  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfbjWEX_4BXy1bhjiopkj0TKq4Wg7JigyNYyDL0oOSw-FQCFQlxffBikC2oKBL5iiO/exec"; 
+  
+  if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN_Ở_ĐÂY")) {
+    var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
+    
+    // Gom dữ liệu cần báo cáo về file tổng
+    var reportPayload = {
+      deviceInfo: window.location.hostname || "Máy nội bộ / File gốc",
+      thangNam: m + "/" + y,
+      idEmp: idEmp,
+      nameEmp: empName,
+      attData: JSON.stringify(data) // Gửi toàn bộ cục dữ liệu tháng đó lên Sheet
+    };
+
+    // Gửi ngầm dữ liệu lên Google Sheet, không làm gián đoạn trải nghiệm người dùng
+    fetch(GOOGLE_WEB_APP_URL, {
+      method: "POST",
+      mode: "no-cors", // Bỏ qua rào cản bảo mật CORS của trình duyệt
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(reportPayload)
+    })
+    .then(function() {
+      console.log("Đã gửi sao lưu chấm công lên Google Sheet của quản lý!");
+    })
+    .catch(function(err) {
+      console.error("Lỗi gửi dữ liệu lên đám mây: ", err);
+    });
+  }
+}
+
  function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
 
  function calc() {
@@ -609,21 +662,22 @@ function scrollDay() {
         document.querySelectorAll('#tb tr').forEach(function(r) { r.classList.remove('active-row'); }); 
         target.classList.add('active-row'); 
         
-        
+        // Tìm đúng thẻ div bọc ngoài bảng công hành chính để kích hoạt cuộn nội bộ
         var container = target.closest('div[style*="overflow-x"]');
         if (container) {
-           
+            // Tính toán vị trí của dòng công so với đỉnh đầu của hộp chứa bảng công
             var targetPosition = target.offsetTop - target.parentElement.offsetTop;
             container.scrollTo({ top: targetPosition, behavior: 'smooth' }); 
         }
         
+        // Nạp nội dung ghi chú của ngày được chọn vào ô nhập liệu
         var savedText = document.getElementById('n-' + d).innerHTML; 
         document.getElementById('note').value = (savedText === '-') ? '' : savedText; 
     }
 }
 
  
-
+// CẬP NHẬT HÀM GHIM TIÊU ĐỀ KHÔNG BỊ TRÔI MẤT KHI CUỘN
 function fixTh() { return; }
 function fixThTV() { return; }
 
@@ -710,19 +764,19 @@ function fixThTV() { return; }
     var d = document.getElementById('sDayTV').value; 
     var target = document.getElementById('rtv-' + d); 
     if (target) { 
-        
+        // Tô màu nền cho dòng ngày đang chọn để dễ theo dõi
         document.querySelectorAll('#tbTV tr').forEach(function(r) { r.classList.remove('active-row'); }); 
         target.classList.add('active-row'); 
         
-        
+        // Tìm đúng thẻ div bọc ngoài bảng công thời vụ để kích hoạt cuộn nội bộ
         var container = target.closest('div[style*="overflow-x"]');
         if (container) {
-            
+            // Tính toán vị trí của dòng công so với đỉnh đầu của hộp chứa bảng công
             var targetPosition = target.offsetTop - target.parentElement.offsetTop;
             container.scrollTo({ top: targetPosition, behavior: 'smooth' }); 
         }
         
-        
+        // Nạp nội dung ghi chú của ngày được chọn vào ô nhập liệu
         var savedText = document.getElementById('ntv-' + d).innerHTML; 
         document.getElementById('noteTV').value = (savedText === '-') ? '' : savedText; 
     } 
@@ -731,11 +785,17 @@ function fixThTV() { return; }
  </script>
  <script>
  
-
+// KHAI BÁO BIẾN NGÀY THÁNG LỊCH BỊ THIẾU TRONG FILE GỐC
 var calViewDate = new Date();
 
+// =========================================================================
+// THUẬT TOÁN ÂM LỊCH VIỆT NAM CHUẨN XÁC NĂM 2025 - 2030 (ĐÃ SỬA LỖI CÚ PHÁP)
+// =========================================================================
+// =========================================================================
+// THUẬT TOÁN ĐỔI DƯƠNG LỊCH SANG ÂM LỊCH VẠN NIÊN VIỆT NAM (CHÍNH XÁC TUYỆT ĐỐI)
+// =========================================================================
 function getAmLich(dd, mm, yy) {
-    
+    // Các hàm bổ trợ toán học thiên văn căn bản
     function jdn(d, m, y) {
         var a = Math.floor((14 - m) / 12);
         var y1 = y + 4800 - a;
@@ -783,7 +843,7 @@ function getAmLich(dd, mm, yy) {
         return list;
     }
     
-   
+    // Logic tính toán ngày âm lịch
     var currentJD = jdn(dd, mm, yy);
     var nmL = getNewMoonList(yy);
     var startIdx = 0;
@@ -801,19 +861,19 @@ function getAmLich(dd, mm, yy) {
     var aMonth = solarLong + 2;
     if (aMonth > 12) aMonth -= 12;
     
-   
+    // Kiểm tra tháng nhuận tự động
     var isLeap = false;
     var nextNM = nmL[startIdx + 1];
     var nextSolarLong = getSunLongMonth(nextNM);
     if (solarLong === nextSolarLong && (currentJD - currentNMJD) < 30) {
-        
+        // Có tháng nhuận xảy ra
         var prevNM = nmL[startIdx - 1];
         if (getSunLongMonth(prevNM) === solarLong) {
             isLeap = true;
         }
     }
 
-   
+    // Trả về chuỗi kết quả hiển thị thông minh
     var displayStr = (aDay === 1) ? aDay + "/" + aMonth : String(aDay);
     if (isLeap && aDay === 1) displayStr += "N";
     
@@ -821,6 +881,9 @@ function getAmLich(dd, mm, yy) {
 }
 
 
+// =========================================================================
+// HÀM KHỞI TẠO VÀ DỰNG LƯỚI LỊCH CHI TIẾT (ĐÃ FIX LỖI)
+// =========================================================================
 function initCalendar() {
     var year = calViewDate.getFullYear(), month = calViewDate.getMonth(); 
     document.getElementById('calTitle').innerText = "Tháng " + (month + 1) + " / " + year;
@@ -963,7 +1026,7 @@ function deleteKyNiem(index) {
      document.getElementById('resPaper').style.display = 'none'; document.getElementById('resSeal').style.display = 'none'; document.getElementById('historySection').style.display = 'none'; resetClearButton();
  }
  
- 
+ // HÀM LẤY GIỜ PHÚT CHUẨN XÁC - GIẢI PHÓNG HOÀN TOÀN NÚT XEM KẾT QUẢ VÀ TRÁNH TREO MÁY
  function getFormatedTime() { 
      var now = new Date(); 
      var timeParts = now.toTimeString().split(' ');
@@ -1121,7 +1184,9 @@ function deleteKyNiem(index) {
  
  document.addEventListener("DOMContentLoaded", function() { if (typeof renderHome === "function") renderHome(); if (typeof renderHomeTV === "function") renderHomeTV(); });
  
-
+ // ===================================================
+ // LOGIC XỬ LÝ TRANG CON TRA CỨU & QUY ĐỔI MÃ NỘI BỘ
+ // ===================================================
  var codePairList = [];
  try {
      var savedCodes = localStorage.getItem('djm-code-pairs');
@@ -1156,7 +1221,7 @@ function deleteKyNiem(index) {
      else { deleteConfirmStateCode[targetId] = false; codePairList = codePairList.filter(function(item, idx) { var currId = String(item.id || idx); return currId !== targetId; }); localStorage.setItem('djm-code-pairs', JSON.stringify(codePairList)); deleteConfirmStateCode = {}; renderCodeHome(); }
  }
 
- 
+ // THUẬT TOÁN TRA CỨU THEO THỜI GIAN THỰC (REAL-TIME) - ĐÚNG 3 DÒNG THEO YÊU CẦU
  function liveSearchCode() {
      var keyword = document.getElementById('codeSearchInp').value.trim().toLowerCase(); var resBox = document.getElementById('codeSearchResultBox');
      if (!keyword) { resBox.innerHTML = ""; resBox.style.display = "none"; return; }
@@ -1174,13 +1239,13 @@ function deleteKyNiem(index) {
      }
  }
 
- 
+ // HÀM KIỂM TRA TRÙNG MÃ THỜI GIAN THỰC KHI ĐANG GÕ
  function checkDuplicateCode() {
      var origVal = document.getElementById('codeOriginalInp').value.trim().toLowerCase();
      var alertBox = document.getElementById('codeDuplicateAlert');
      if (!origVal) { alertBox.innerHTML = ""; alertBox.style.display = "none"; return false; }
      
-     
+     // DÒ TÌM XEM MÃ GỐC ĐÃ TỒN TẠI TRONG BỘ NHỚ CHƯA
      var match = codePairList.find(function(item) { return item.orig.toLowerCase() === origVal; });
      if (match) {
          alertBox.innerHTML = `⚠ Đã tồn tại với mã quy đổi: <span style="text-decoration:underline;">${match.intern}</span>`;
@@ -1192,7 +1257,7 @@ function deleteKyNiem(index) {
      }
  }
 
- 
+ // CẬP NHẬT LẠI HÀM LƯU MÃ ĐỂ CHẶN KHÔNG CHO LƯU NẾU CỐ TÌNH ẤN KHI TRÙNG MÃ
  var originalSaveFunc = saveNewCodePair; 
  saveNewCodePair = function() {
      if (checkDuplicateCode()) { 
