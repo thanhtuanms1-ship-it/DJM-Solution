@@ -588,28 +588,30 @@
      document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
  }
 function update() { 
-
+  // --- GIỮ NGUYÊN 100% TOÀN BỘ ĐOẠN CODE GỐC CỦA BẠN ---
+  var d = document.getElementById('sDay').value;
+  var h = parseFloat(document.getElementById('hrs').value) || 0;
+  var n = document.getElementById('note').value.trim(); 
+  setRow(d, h, n); 
+  
+  var m = document.getElementById('m').value;
+  var y = document.getElementById('y').value;
+  var storageKey = "att-id-" + idEmp + "-" + m + "-" + y;
+  var data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; 
+  
+  data[d] = { hrs: h, note: n }; 
+  localStorage.setItem(storageKey, JSON.stringify(data)); 
+  
   document.getElementById('note').value = ''; 
   calc(); 
   scrollDay(); 
-  
-  
-  setTimeout(guiSaoLuuLenGoogleSheet, 500); 
+  // --- KẾT THÚC ĐOẠN CODE GỐC CỦA BẠN ---
+
+  // KÍCH HOẠT HÀM SAO LƯU SAU 0.5 GIÂY (SAU KHI MÁY BẠN ĐÃ TÍNH TOÁN XONG)
+  if (typeof guiSaoLuuLenGoogleSheet === "function") {
+    setTimeout(guiSaoLuuLenGoogleSheet, 500);
+  }
 }
-
- function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
-
- function calc() {
-     var m = parseInt(document.getElementById('m').value), y = parseInt(document.getElementById('y').value), totalDays = new Date(y, m, 0).getDate(), sal = parseFloat(document.getElementById('sal').value) || 0, allow = parseFloat(document.getElementById('allow').value) || 0;
-     var tc = 0, tcn = 0, tt1 = 0, tt2 = 0, totalMeal = 0, weekGroups = {};
-     for (var d = 1; d <= totalDays; d++) {
-         var h = parseFloat(document.getElementById('h-' + d).innerHTML) || 0; tc += parseFloat(document.getElementById('c-' + d).innerHTML) || 0; tcn += parseFloat(document.getElementById('cn-' + d).innerHTML) || 0; tt1 += parseFloat(document.getElementById('t1-' + d).innerHTML) || 0; tt2 += parseFloat(document.getElementById('t2-' + d).innerHTML) || 0;
-         if (h > 0 && !isSun[d]) { if (h >= 12) totalMeal += 12000; var dateObj = new Date(y, m - 1, d), dayOfWeek = dateObj.getDay(), currentMonday = new Date(dateObj); currentMonday.setDate(dateObj.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1)); var weekKey = currentMonday.toDateString(); if (!weekGroups[weekKey]) weekGroups[weekKey] = []; weekGroups[weekKey].push({ ot: h > 8 ? (h - 8) : 0 }); }
-     }
-     for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count === 2) totalMeal += 20000; else if (over6Count === 3) totalMeal += 50000; else if (over6Count === 4) totalMeal += 90000; else if (over6Count === 5) totalMeal += 140000; else if (over6Count >= 6) totalMeal += 200000; }
-     tc = Math.round(tc * 100) / 100; var dp = sal / 26, hp = dp / 8, bh = sal * 0.105, cd = 37000; var total = Math.round((tc * dp) + (tcn * hp * 2) + (tt1 * hp * 1.5) + (tt2 * hp * 1.85) + allow + totalMeal - bh - cd);
-     document.getElementById('out').innerHTML = "<span>Công: " + tc + " | TC1.5: " + tt1 + "h | TC1.85: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='red'>BH: -" + Math.round(bh).toLocaleString('vi-VN') + "đ | CĐ: -37k</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
- }
 
 function scrollDay() {
     var d = document.getElementById('sDay').value; 
