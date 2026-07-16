@@ -602,43 +602,43 @@ function update() {
   localStorage.setItem(storageKey, JSON.stringify(data)); 
   
   document.getElementById('note').value = ''; 
-  calc(); 
+  calc(); // Gọi hàm tính toán lại lương và ngày công trên giao diện
   scrollDay(); 
 
-  // ==========================================
-  // PHẦN THÊM MỚI: TỰ ĐỘNG ĐẨY DỮ LIỆU LÊN GOOGLE SHEET
-  // ==========================================
+  // =========================================================
+  // GỬI DỮ LIỆU ĐÃ TÍNH TOÁN THEO CỘT LÊN GOOGLE SHEET
+  // =========================================================
+  const GOOGLE_WEB_APP_URL = "ĐƯỜNG_DẪN_WEB_APP_URL_MỚI_CỦA_BẠN"; 
   
-  // Dán cái đường link Web App URL lấy ở Bước 1 vào đây:
-  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwfbjWEX_4BXy1bhjiopkj0TKq4Wg7JigyNYyDL0oOSw-FQCFQlxffBikC2oKBL5iiO/exec"; 
-  
-  if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN_Ở_ĐÂY")) {
+  if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN")) {
     var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
     
-    // Gom dữ liệu cần báo cáo về file tổng
+    // Thu thập kết quả tính toán trực tiếp từ các ô hiển thị trên giao diện của bạn
     var reportPayload = {
-      deviceInfo: window.location.hostname || "Máy nội bộ / File gốc",
+      deviceInfo: window.location.hostname || "Máy nội bộ",
       thangNam: m + "/" + y,
       idEmp: idEmp,
       nameEmp: empName,
-      attData: JSON.stringify(data) // Gửi toàn bộ cục dữ liệu tháng đó lên Sheet
+      // Lấy giá trị chữ từ giao diện và ép về dạng số để gửi lên các cột
+      tongCong: parseFloat(document.getElementById('tWork')?.innerText) || 0,
+      tongTcThuong: parseFloat(document.getElementById('tOt1')?.innerText) || 0,
+      tongTc185: parseFloat(document.getElementById('tOt2')?.innerText) || 0, 
+      tongChuNhat: parseFloat(document.getElementById('tSun')?.innerText) || 0,
+      // Bóc tách số tiền thực lãnh (loại bỏ chữ "đ" hoặc dấu chấm phân cách nếu có)
+      thucLanh: parseInt((document.getElementById('tSal')?.innerText || "0").replace(/[^0-9]/g, "")) || 0
     };
 
-    // Gửi ngầm dữ liệu lên Google Sheet, không làm gián đoạn trải nghiệm người dùng
+    // Tiến hành đẩy ngầm dữ liệu lên Google Sheet công khai
     fetch(GOOGLE_WEB_APP_URL, {
       method: "POST",
-      mode: "no-cors", // Bỏ qua rào cản bảo mật CORS của trình duyệt
-      headers: { "Content-Type": "application/json" },
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
       body: JSON.stringify(reportPayload)
     })
-    .then(function() {
-      console.log("Đã gửi sao lưu chấm công lên Google Sheet của quản lý!");
-    })
-    .catch(function(err) {
-      console.error("Lỗi gửi dữ liệu lên đám mây: ", err);
-    });
+    .catch(function(err) { console.error("Lỗi đồng bộ đám mây: ", err); });
   }
 }
+
 
  function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
 
