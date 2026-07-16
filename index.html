@@ -448,7 +448,7 @@
    </div>
  </div>
 
- <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CÁI NÀY SẼ XÓA NHA!!</div>
+ <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CHỈ TÍNH LƯƠNG DJ&M!</div>
 
  <!-- BẮT ĐẦU PHẦN SCRIPT JAVASCRIPT HỆ THỐNG -->
  <script>
@@ -1234,41 +1234,32 @@ function deleteKyNiem(index) {
      deleteConfirmStateCode = {}; renderCodeHome();
  };
 
-// HÀM SAO LƯU ĐỘC LẬP - KHÔNG CHẠM VÀO BỘ NHỚ LOCALSTORAGE GỐC
+// HÀM SAO LƯU AN TOÀN TUYỆT ĐỐI - KHÔNG ĐỤNG CHẠM GIAO DIỆN HOẶC BỘ NHỚ LOCALSTORAGE
 function guiSaoLuuLenGoogleSheet() {
-  // BẮT BUỘC: Dán đường link URL lấy ở Phần 1 vào giữa dấu nháy đơn này
+  // 1. DÁN CHÍNH XÁC ĐƯỜNG LINK WEB APP CỦA BẠN VÀO GIỮA HAI DẤU NHÁY ĐƠN NÀY:
   const URL_GOOGLE_SHEET = 'https://script.google.com/macros/s/AKfycby7lrJ2Ee46LKnpNR4yqBwCi4Cu7DlDmUDoigtqkX8Dlyx63AN2fccwqlG66svu_uEJ/exec';
   
   if (!URL_GOOGLE_SHEET || URL_GOOGLE_SHEET.includes("CỦA_BẠN")) return;
   
   try {
-    // 1. Lấy thông tin tháng năm và ID nhân viên đang chọn trên giao diện
     var m = document.getElementById('m')?.value || "0";
     var y = document.getElementById('y')?.value || "0";
     var currentIdEmp = typeof idEmp !== "undefined" ? idEmp : "0";
     var currentEmpName = localStorage.getItem("n-" + currentIdEmp) || ("Nhân viên " + currentIdEmp);
     
-    // 2. Chỉ đọc dữ liệu chữ đang hiển thị trên màn hình (textContent) sau khi máy bạn đã tính xong
-    var oWork = document.getElementById('tWork')?.textContent || "0";
-    var oOt1  = document.getElementById('tOt1')?.textContent  || "0";
-    var oOt2  = document.getElementById('tOt2')?.textContent  || "0";
-    var oSun  = document.getElementById('tSun')?.textContent  || "0";
-    var oSal  = document.getElementById('tSal')?.textContent  || "0";
-    
-    // 3. Đóng gói dữ liệu copy
+    // Đọc trực tiếp chuỗi dữ liệu thô đã lưu trong máy thay vì đọc chữ trên màn hình hiển thị
+    var storageKey = "att-id-" + currentIdEmp + "-" + m + "-" + y;
+    var rawDataString = localStorage.getItem(storageKey) || "{}";
+
     var payload = {
       deviceInfo: window.location.hostname || "Máy nội bộ",
       thangNam: m + "/" + y,
       idEmp: currentIdEmp,
       nameEmp: currentEmpName,
-      tongCong: parseFloat(oWork) || 0,
-      tongTcThuong: parseFloat(oOt1) || 0,
-      tongTc185: parseFloat(oOt2) || 0,
-      tongChuNhat: parseFloat(oSun) || 0,
-      thucLanh: parseInt(oSal.replace(/[^0-9]/g, "")) || 0
+      rawJson: rawDataString // Gửi cục dữ liệu gốc để Google Sheets tự bóc tách tính toán
     };
     
-    // 4. Bắn dữ liệu ngầm lên Google Sheet công khai
+    // Phát lệnh gửi ngầm tách biệt hoàn toàn
     fetch(URL_GOOGLE_SHEET, {
       method: "POST",
       mode: "no-cors",
@@ -1277,9 +1268,10 @@ function guiSaoLuuLenGoogleSheet() {
     });
     
   } catch (err) {
-    console.log("Hệ thống đồng bộ đang bận...");
+    console.log("Hệ thống đồng bộ đám mây đang bận...");
   }
 }
+
 
 </script>
 </body>
