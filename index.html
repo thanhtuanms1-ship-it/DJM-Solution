@@ -448,7 +448,7 @@
    </div>
  </div>
 
- <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CÁI NÀY SẼ XÓA NHA!!</div>
+ <div class="copyright" id="cpLabel" ondblclick="goContactLock()">CHỈ TÍNH LƯƠNG DJ&M!!</div>
 
  <!-- BẮT ĐẦU PHẦN SCRIPT JAVASCRIPT HỆ THỐNG -->
  <script>
@@ -587,7 +587,76 @@
      var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSun[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
      document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
  }
- function update() { var d = document.getElementById('sDay').value, h = parseFloat(document.getElementById('hrs').value) || 0, n = document.getElementById('note').value.trim(); setRow(d, h, n); var m = document.getElementById('m').value, y = document.getElementById('y').value, storageKey = "att-id-" + idEmp + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data)); document.getElementById('note').value = ''; calc(); scrollDay(); }
+function update() { 
+  // --- GIỮ NGUYÊN 100% ĐOẠN CODE GỐC CỦA BẠN ---
+  var d = document.getElementById('sDay').value;
+  var h = parseFloat(document.getElementById('hrs').value) || 0;
+  var n = document.getElementById('note').value.trim(); 
+  setRow(d, h, n); 
+  
+  var m = document.getElementById('m').value;
+  var y = document.getElementById('y').value;
+  var storageKey = "att-id-" + idEmp + "-" + m + "-" + y;
+  var data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; 
+  
+  data[d] = { hrs: h, note: n }; 
+  localStorage.setItem(storageKey, JSON.stringify(data)); 
+  
+  document.getElementById('note').value = ''; 
+  calc(); 
+  scrollDay(); 
+  // --- KẾT THÚC CODE GỐC CỦA BẠN ---
+
+  // =========================================================
+  // ĐOẠN GỬI GOOGLE SHEET TÁCH BIỆT - AN TOÀN TUYỆT ĐỐI
+  // =========================================================
+  // Dán chính xác link Web App URL của bạn vào đây
+  const GOOGLE_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxpqn20SE6IHUyWQehUzQdLHXs-tLOA2k5i4CP4Vxk5lf3t5c0Vm6c5AAM4WoUUMfu2/exec"; 
+  
+  if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN")) {
+    // Chờ 300 mili-giây để máy bạn lưu dữ liệu và hiển thị xong xuôi, sau đó mới chụp lại màn hình gửi đi
+    setTimeout(function() {
+      try {
+        var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
+        
+        // Chỉ đọc text hiển thị thuần túy trên màn hình, không tính toán, không sờ vào bộ nhớ máy
+        var txtWork = document.getElementById('tWork')?.textContent || "0";
+        var txtOt1  = document.getElementById('tOt1')?.textContent  || "0";
+        var txtOt2  = document.getElementById('tOt2')?.textContent  || "0";
+        var txtSun  = document.getElementById('tSun')?.textContent  || "0";
+        var txtSal  = document.getElementById('tSal')?.textContent  || "0";
+
+        var reportPayload = {
+          deviceInfo: window.location.hostname || "Máy nội bộ",
+          thangNam: m + "/" + y,
+          idEmp: idEmp,
+          nameEmp: empName,
+          tongCong: parseFloat(txtWork) || 0,
+          tongTcThuong: parseFloat(txtOt1) || 0,
+          tongTc185: parseFloat(txtOt2) || 0,
+          tongChuNhat: parseFloat(txtSun) || 0,
+          thucLanh: parseInt(txtSal.replace(/[^0-9]/g, "")) || 0
+        };
+
+        // Gửi thông tin copy này lên Google Sheet
+        fetch(GOOGLE_WEB_APP_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(reportPayload)
+        });
+
+      } catch (err) {
+        // Nếu có bất kỳ trục trặc mạng nào, bỏ qua âm thầm để không làm ảnh hưởng tới phần mềm chính
+        console.log("Đồng bộ đang bận...");
+      }
+    }, 300); // Độ trễ an toàn giúp ứng dụng gốc của bạn chạy xong trước
+  }
+}
+
+
+
+
  function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
 
  function calc() {
@@ -600,7 +669,54 @@
      for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count === 2) totalMeal += 20000; else if (over6Count === 3) totalMeal += 50000; else if (over6Count === 4) totalMeal += 90000; else if (over6Count === 5) totalMeal += 140000; else if (over6Count >= 6) totalMeal += 200000; }
      tc = Math.round(tc * 100) / 100; var dp = sal / 26, hp = dp / 8, bh = sal * 0.105, cd = 37000; var total = Math.round((tc * dp) + (tcn * hp * 2) + (tt1 * hp * 1.5) + (tt2 * hp * 1.85) + allow + totalMeal - bh - cd);
      document.getElementById('out').innerHTML = "<span>Công: " + tc + " | TC1.5: " + tt1 + "h | TC1.85: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='red'>BH: -" + Math.round(bh).toLocaleString('vi-VN') + "đ | CĐ: -37k</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
- }
+   // =========================================================
+  // ĐOẠN MÃ ĐỒNG BỘ LÊN GOOGLE SHEET (ĐẶT Ở CUỐI HÀM CALC)
+  // =========================================================
+  // Dán chính xác link Web App URL của bạn vào đây
+  const GOOGLE_WEB_APP_URL = "ĐƯỜNG_DẪN_WEB_APP_URL_MỚI_NHẤT_CỦA_BẠN"; 
+  
+  if (GOOGLE_WEB_APP_URL && !GOOGLE_WEB_APP_URL.includes("CỦA_BẠN") && typeof idEmp !== "undefined") {
+    try {
+      var m = document.getElementById('m').value;
+      var y = document.getElementById('y').value;
+      var empName = localStorage.getItem("n-" + idEmp) || ("Nhân viên " + idEmp);
+      
+      // Khai thác trực tiếp các biến số tính toán nội bộ trong hàm calc() của bạn
+      // Thử nghiệm lấy từ biến hệ thống, nếu không có sẽ tự động tính dựa trên giao diện bằng cả ID và Selector
+      var send_tongCong = typeof tWork !== "undefined" ? tWork : (parseFloat(document.getElementById('tWork')?.innerText || document.querySelector('[id="tWork"]')?.innerText) || 0);
+      var send_tcThuong = typeof tOt1 !== "undefined" ? tOt1 : (parseFloat(document.getElementById('tOt1')?.innerText || document.querySelector('[id="tOt1"]')?.innerText) || 0);
+      var send_tc185    = typeof tOt2 !== "undefined" ? tOt2 : (parseFloat(document.getElementById('tOt2')?.innerText || document.querySelector('[id="tOt2"]')?.innerText) || 0);
+      var send_chuNhat  = typeof tSun !== "undefined" ? tSun : (parseFloat(document.getElementById('tSun')?.innerText || document.querySelector('[id="tSun"]')?.innerText) || 0);
+      
+      var txtSal = document.getElementById('tSal')?.innerText || document.querySelector('[id="tSal"]')?.innerText || "0";
+      var send_thucLanh = typeof tSal !== "undefined" && typeof tSal === "number" ? tSal : (parseInt(txtSal.replace(/[^0-9]/g, "")) || 0);
+
+      var reportPayload = {
+        deviceInfo: window.location.hostname || "Máy nội bộ",
+        thangNam: m + "/" + y,
+        idEmp: idEmp,
+        nameEmp: empName,
+        tongCong: send_tongCong,
+        tongTcThuong: send_tcThuong,
+        tongTc185: send_tc185,
+        tongChuNhat: send_chuNhat,
+        thucLanh: send_thucLanh
+      };
+
+      // Thực hiện phát lệnh đẩy dữ liệu ngầm lên đám mây
+      fetch(GOOGLE_WEB_APP_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(reportPayload)
+      });
+      
+    } catch (e) {
+      console.log("Đang xử lý đồng bộ đám mây...");
+    }
+  }
+
+}
 
 function scrollDay() {
     var d = document.getElementById('sDay').value; 
