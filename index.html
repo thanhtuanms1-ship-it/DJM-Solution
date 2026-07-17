@@ -1252,9 +1252,9 @@ function deleteKyNiem(index) {
      deleteConfirmStateCode = {}; renderCodeHome();
  };
 
-// HÀM GỬI LỊCH SỬ LÊN GOOGLE SHEET - CO LẬP HOÀN TOÀN KHÔNG CHẠM LOCALSTORAGE GỐC
+// HÀM GỬI LỊCH SỬ THỰC LÃNH KHỚP GIAO DIỆN CHUẨN XÁC 100%
 function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
-  // BẮT BUỘC: Bạn dán đường link URL lấy được ở Phần 1 vào giữa hai dấu nháy đơn dưới đây:
+  // BẮT BUỘC: Điền chính xác địa chỉ URL Web App của bạn vào giữa hai dấu nháy đơn
   const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9_Rftyn3ETNIchG9FbXQ99KhRVci5u5IecNM1kwr89AQHJv4rE2lz7gwuvsvnNHtP/exec';
   
   if (!SCRIPT_URL || SCRIPT_URL.includes("CỦA_BẠN")) return;
@@ -1263,8 +1263,7 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
     var tenNV = localStorage.getItem("n-" + maNV) || ("Nhân viên " + maNV);
     var luongCoBan = parseFloat(localStorage.getItem("s-id-" + maNV)) || 6000000;
     
-    // Tự động phân tích các giá trị tổng dựa trên cục dữ liệu thô vừa lưu (Không đọc giao diện màn hình)
-    var tinh_tongCong = 0;
+    // 1. Phân tích số giờ tăng ca thường và giờ chủ nhật ngầm dựa trên bộ nhớ máy
     var tinh_tongTC = 0;
     var tinh_tongCN = 0;
     var totalDaysInMonth = new Date(nam, thang, 0).getDate();
@@ -1275,25 +1274,33 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
         if (h > 0) {
           var dayOfWeek = new Date(nam, thang - 1, d).getDay();
           if (dayOfWeek === 0) { 
-            tinh_tongCN += h; // Tính tổng giờ làm ngày chủ nhật
-          } else {
-            tinh_tongCong += (h <= 8 ? Math.round((h / 8) * 100) / 100 : 1); // Tính ngày công thường
-            if (h > 8) {
-              tinh_tongTC += (h - 8); // Tính tổng giờ tăng ca thường dư ra
-            }
+            tinh_tongCN += h; // Tổng giờ chủ nhật
+          } else if (h > 8) {
+            tinh_tongTC += (h - 8); // Tổng giờ tăng ca thường
           }
         }
       }
     }
-    tinh_tongCong = Math.round(tinh_tongCong * 100) / 100;
-    
-    // Thực hiện giả lập tính toán lương thực lãnh độc lập dựa trên thuật toán gốc của bạn
-    var dp = luongCoBan / 26, hp = dp / 8, bh = luongCoBan * 0.105, cd = 37000;
-    // (Phần này tính toán lương cứng cơ bản dựa theo công thức thực nhận trên giao diện của bạn)
-    var tinh_thucLanh = Math.round((tinh_tongCong * dp) + (tinh_tongCN * hp * 2) + (tinh_tongTC * hp * 1.5) - bh - cd);
-    if (tinh_thucLanh < 0) tinh_thucLanh = 0;
 
-    // Đóng gói thành gói dữ liệu biểu mẫu văn bản thô chống chặn CORS bảo mật trên trình duyệt
+    // 2. Trích xuất văn bản thô hiển thị tại dòng thống kê "out" trên giao diện của bạn
+    var outBoxText = document.getElementById('out')?.innerText || "";
+    
+    // Tìm con số "Công: X" từ giao diện
+    var matchCong = outBoxText.match(/Công:\s*([0-9.]+)/);
+    var tinh_tongCong = matchCong ? parseFloat(matchCong[1]) : 0;
+    
+    // Tìm con số "Thực nhận: X" từ giao diện để lấy số tiền gốc chính xác của máy người dùng
+    var matchSalary = outBoxText.match(/Thực nhận:\s*([0-9.,]+)/);
+    var thucNhanGoc = 0;
+    if (matchSalary) {
+      // Loại bỏ mọi ký tự không phải số (dấu chấm, dấu phẩy phân cách) để chuyển về số thuần túy
+      thucNhanGoc = parseInt(matchSalary[1].replace(/[^0-9]/g, "")) || 0;
+    }
+    
+    // 3. Cộng thêm khoản trợ cấp đặc biệt 1,300,000đ vào Thực nhận theo yêu cầu của bạn
+    var thucLanhCuoiCung = thucNhanGoc + 1300000;
+
+    // Đóng gói thành biểu mẫu văn bản thô gửi ngầm
     var bieuMau = new FormData();
     bieuMau.append("deviceInfo", window.location.hostname || "File nội bộ");
     bieuMau.append("thangNam", thang + "/" + nam);
@@ -1303,9 +1310,9 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
     bieuMau.append("tongCong", tinh_tongCong);
     bieuMau.append("tongTC", tinh_tongTC);
     bieuMau.append("tongCN", tinh_tongCN);
-    bieuMau.append("thucLanh", tinh_thucLanh);
+    bieuMau.append("thucLanh", thucLanhCuoiCung); // Số tiền đã cộng thêm 1tr3
 
-    // Kích hoạt bắn lệnh chạy ngầm lên đám mây Google
+    // Bắn ngầm dữ liệu lên Google Sheet lịch sử
     fetch(SCRIPT_URL, {
       method: "POST",
       mode: "no-cors",
@@ -1313,9 +1320,10 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
     });
     
   } catch (error) {
-    console.log("Đồng bộ đang bận...");
+    console.log("Hệ thống đồng bộ đám mây đang bận...");
   }
 }
+
 
 </script>
 </body>
