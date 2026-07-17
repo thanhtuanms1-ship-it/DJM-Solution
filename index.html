@@ -169,14 +169,6 @@
            <tbody id="tb"></tbody>
          </table>
        </div>
-<!-- VỊ TRÍ CHÈN: DƯỚI CÙNG BẢNG CHẤM CÔNG HÀNH CHÍNH KHI CUỘN HẾT TRANG -->
-<div style="text-align: center; margin: 20px 0; padding: 15px 10px; border-top: 1px solid #cbd5e1; background: #f8fafc; border-radius: 8px;">
-  <small style="display: block; color: #64748b; margin-bottom: 6px; font-weight: bold; font-size: 11px; text-transform: uppercase;">Khu vực quản trị đám mây</small>
-  <button type="button" onclick="xacThucVaTaiDuLieu()" style="background-color: #dc3545; color: white; padding: 8px 18px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 2px 4px rgba(220,53,69,0.2);">
-    🔐 Nạp lại dữ liệu từ Cloud (Sheet)
-  </button>
-</div>
-
      </div>
    </div>
  </div>
@@ -507,33 +499,14 @@
      if (sectionId === 'main-dashboard') { if (typeof back === 'function') back(); if (typeof backTV === 'function') backTV(); }
  }
 
-function exportBackupData() {
-  try {
-    const dataStr = JSON.stringify(localStorage);
-    
-    // Sử dụng cơ chế Blob để tạo tệp tin an toàn cho điện thoại di động
-    const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    
-    const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0, 10) + '.json';
-    const link = document.createElement('a');
-    
-    link.href = url;
-    link.download = name;
-    
-    // Gắn thẻ tạm vào thân trang để hỗ trợ một số trình duyệt di động kén mã
-    document.body.appendChild(link);
-    link.click();
-    
-    // Gỡ bỏ thẻ tạm và giải phóng bộ nhớ đệm sau khi tải xong
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    
-  } catch (e) { 
-    alert("Lỗi xuất file sao lưu: " + e.message); 
-  }
-}
-
+ function exportBackupData() {
+     try {
+         const dataStr = JSON.stringify(localStorage);
+         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
+         const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0,10) + '.json';
+         const link = document.createElement('a'); link.setAttribute('href', dataUri); link.setAttribute('download', name); link.click();
+     } catch (e) { alert("Lỗi xuất file: " + e.message); }
+ }
 
  function importBackupData(event) {
      const input = event.target; if (!input.files || !input.files[0]) return;
@@ -1348,138 +1321,6 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
   }
 }
 
-// =========================================================================
-// HÀM 1: ĐẨY DỮ LIỆU LÊN SHEET NGUYÊN BẢN ỔN ĐỊNH CỦA BẠN (GIỮ NGUYÊN)
-// =========================================================================
-function xuLyGhiLichSuLenSheet(thang, nam, maNV, cucDuLieuTho) {
-  // Điền liên kết Web App URL (đuôi /exec) của bạn vào đây
-  const SCRIPT_URL = 'ĐƯỜNG_DẪN_WEB_APP_URL_CỦA_BẠN';
-  if (!SCRIPT_URL || SCRIPT_URL.includes("CỦA_BẠN")) return;
-  try {
-    var tenNV = localStorage.getItem("n-" + maNV) || ("Nhân viên " + maNV);
-    var luongCoBan = parseFloat(localStorage.getItem("s-id-" + maNV)) || 6000000;
-    var tinh_tongTC = 0; var tinh_tongCN = 0;
-    var totalDaysInMonth = new Date(nam, thang, 0).getDate();
-    for (var d = 1; d <= totalDaysInMonth; d++) {
-      if (cucDuLieuTho[d]) {
-        var h = parseFloat(cucDuLieuTho[d].hrs) || 0;
-        if (h > 0) {
-          var dayOfWeek = new Date(nam, thang - 1, d).getDay();
-          if (dayOfWeek === 0) { tinh_tongCN += h; } 
-          else if (h > 8) { tinh_tongTC += (h - 8); }
-        }
-      }
-    }
-    var outBoxText = document.getElementById('out')?.innerText || "";
-    var matchCong = outBoxText.match(/Công:\s*([0-9.]+)/);
-    var tinh_tongCong = matchCong ? parseFloat(matchCong[1]) : 0;
-    var matchSalary = outBoxText.match(/Thực nhận:\s*([0-9.,]+)/);
-    var thucLanhChinhXac = 0;
-    if (matchSalary) { thucLanhChinhXac = parseInt(matchSalary[1].replace(/[^0-9]/g, "")) || 0; }
-    
-    var bieuMau = new FormData();
-    bieuMau.append("deviceInfo", window.location.hostname || "File nội bộ");
-    bieuMau.append("thangNam", thang + "/" + nam);
-    bieuMau.append("idEmp", maNV);
-    bieuMau.append("nameEmp", tenNV);
-    bieuMau.append("luongCB", luongCoBan);
-    bieuMau.append("tongCong", tinh_tongCong);
-    bieuMau.append("tongTC", tinh_tongTC);
-    bieuMau.append("tongCN", tinh_tongCN);
-    bieuMau.append("thucLanh", thucLanhChinhXac);
-    fetch(SCRIPT_URL, { method: "POST", mode: "no-cors", body: bieuMau });
-  } catch (error) { console.log("Đồng bộ đang bận..."); }
-}
-
-// =========================================================================
-// HÀM 2: YÊU CẦU MẬT KHẨU TRƯỚC KHI CHO PHÉP KÉO DỮ LIỆU VỀ
-// =========================================================================
-function xacThucVaTaiDuLieu() {
-  // Đồng bộ mật khẩu theo cơ chế mã pin hệ thống có sẵn trong máy bạn (mặc định: 0109)
-  var matKhauHeThong = localStorage.getItem('djm-system-pin') || "0109";
-  
-  var nhapPass = prompt("Nhập mật khẩu quản lý hệ thống để nạp lại dữ liệu:");
-  if (nhapPass === null) return; // Nhấn hủy
-  
-  if (nhapPass === matKhauHeThong) {
-    taiDuLieuTuGoogleSheet(); // Kích hoạt lệnh đọc đám mây
-  } else {
-    alert("Mật khẩu không chính xác! Hành động bị từ chối.");
-  }
-}
-
-// =========================================================================
-// HÀM 3: ĐỌC VÀ NẠP NGƯỢC DỮ LIỆU TỪ FILE GOOGLE SHEET (DẠNG CSV VỀ MÁY)
-// =========================================================================
-async function taiDuLieuTuGoogleSheet() {
-  // BẮT BUỘC: Dán đường link xuất bản dạng CSV (tab ChamCongHanhChinh) của bạn vào đây
-  const LINK_CSV_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJrDqtjG1VEfB2GnhoinAPRvk9CP0payzn13Lz6TPaGSZuJREKqI3ldSGa2xfxt4z5bLIKuk68ddd9/pubhtml';
-  
-  if (!LINK_CSV_SHEET || LINK_CSV_SHEET.includes("CỦA_BẠN")) {
-    alert("Chưa cấu hình đường dẫn CSV từ Google Sheets!");
-    return;
-  }
-  
-  try {
-    var m = document.getElementById('m')?.value;
-    var y = document.getElementById('y')?.value;
-    var currentThangNam = m + "/" + y;
-    var currentIdEmp = typeof idEmp !== "undefined" ? idEmp : null;
-    
-    if (!currentIdEmp) {
-      alert("Không tìm thấy thông tin nhân viên hiện tại!");
-      return;
-    }
-
-    // Tải tệp văn bản CSV từ Google Sheets ngầm về trình duyệt
-    const response = await fetch(LINK_CSV_SHEET);
-    if (!response.ok) throw new Error("Mạng lỗi");
-    
-    const csvText = await response.text();
-    const lines = csvText.split("\n");
-    
-    var indexThangNam = 2; // Cột C: Tháng/Năm
-    var indexIdEmp    = 3; // Cột D: Mã NV
-    var indexTongCong = 6; // Cột G: Tổng Ngày Công trên bảng Google Sheets của bạn
-    
-    var timThayLichSu = false;
-    var soNgayCongMoi = 0;
-
-    // Tiến hành quét ngược từ dòng dưới cùng lên trên đầu (để lấy dòng lịch sử mới nhất)
-    for (let i = lines.length - 1; i >= 1; i--) {
-      if (!lines[i].trim()) continue;
-      var columns = lines[i].split(",");
-      
-      var rowThangNam = columns[indexThangNam] ? columns[indexThangNam].toString().trim().replace(/['"]/g, "") : "";
-      var rowIdEmp    = columns[indexIdEmp] ? columns[indexIdEmp].toString().trim().replace(/['"]/g, "") : "";
-      
-      // Nếu khớp đồng thời mã NV và tháng/năm công đang hiển thị
-      if (rowIdEmp === currentIdEmp.toString() && rowThangNam === currentThangNam) {
-        soNgayCongMoi = parseFloat(columns[indexTongCong]) || 0;
-        timThayLichSu = true;
-        break; // Ngắt tiến trình quét khi đã lấy được dòng mới nhất
-      }
-    }
-
-    if (timThayLichSu) {
-      var storageKey = "att-id-" + currentIdEmp + "-" + m + "-" + y;
-      var dataThang = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {};
-      
-      // Khởi tạo công trạng đại diện đưa vào Ngày 1 trong bộ nhớ máy
-      dataThang["1"] = { hrs: soNgayCongMoi * 8, note: "Dữ liệu nạp ngược từ Cloud" };
-      localStorage.setItem(storageKey, JSON.stringify(dataThang));
-      
-      // Gọi lệnh cập nhật hiển thị và tô màu ngày công nội bộ của file gốc
-      if (typeof init === "function") init(false);
-      
-      alert("Đồng bộ thành công! Đã nạp lại " + soNgayCongMoi + " ngày công từ Cloud về thiết bị.");
-    } else {
-      alert("Không tìm thấy dòng dữ liệu lịch sử nào của nhân viên này trong tháng " + currentThangNam + " trên Cloud!");
-    }
-  } catch (error) {
-    alert("Không thể kết nối tới Google Sheets. Vui lòng kiểm tra lại mạng hoặc link CSV!");
-  }
-}
 
 
 </script>
