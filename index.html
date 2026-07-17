@@ -500,28 +500,60 @@
  }
 
  function exportBackupData() {
-     try {
-         const dataStr = JSON.stringify(localStorage);
-         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-         const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0,10) + '.json';
-         const link = document.createElement('a'); link.setAttribute('href', dataUri); link.setAttribute('download', name); link.click();
-     } catch (e) { alert("Lỗi xuất file: " + e.message); }
+ try {
+ // 1. Chuyển đổi dữ liệu localStorage thành cấu trúc chuỗi JSON sạch
+ const dataStr = JSON.stringify(localStorage);
+ 
+ // 2. Đưa chuỗi vào Blob để tạo file ảo nhằm giải phóng bộ nhớ và phá bỏ giới hạn ký tự trên di động
+ const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8;' });
+ const dataUri = URL.createObjectURL(blob);
+ 
+ // 3. Cấu hình tên tệp xuất theo ngày
+ const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0,10) + '.json';
+ const link = document.createElement('a'); 
+ link.setAttribute('href', dataUri); 
+ link.setAttribute('download', name);
+ 
+ // 4. Kích hoạt luồng tải tệp vật lý và giải phóng liên kết ảo ngay lập tức
+ document.body.appendChild(link);
+ link.click();
+ document.body.removeChild(link);
+ URL.revokeObjectURL(dataUri);
+ } catch (e) { 
+ alert("Lỗi xuất file: " + e.message); 
  }
+}
 
- function importBackupData(event) {
-     const input = event.target; if (!input.files || !input.files[0]) return;
-     const reader = new FileReader();
-     reader.onload = function() {
-         try {
-             const data = JSON.parse(reader.result);
-             if (confirm("Hành động này sẽ ghi đè TOÀN BỘ dữ liệu. Bạn có muốn tiếp tục?")) {
-                 localStorage.clear(); for (const k in data) { localStorage.setItem(k, data[k]); }
-                 alert("Khôi phục thành công!"); location.reload();
-             }
-         } catch (e) { alert("File lỗi cấu trúc: " + e.message); }
-         input.value = '';
-     };
-     reader.readAsText(input.files[0]);
+function importBackupData(event) {
+ const input = event.target; 
+ if (!input.files || !input.files[0]) return;
+ 
+ const reader = new FileReader();
+ reader.onload = function() {
+ try {
+ const data = JSON.parse(reader.result);
+ if (confirm("Hành động này sẽ ghi đè TOÀN BỘ dữ liệu. Bạn có muốn tiếp tục?")) {
+ // Xóa dữ liệu cũ an toàn
+ localStorage.clear(); 
+ 
+ // Nạp lại chính xác các cặp key-value cũ của người dùng
+ for (const k in data) { 
+ localStorage.setItem(k, data[k]); 
+ }
+ 
+ alert("Khôi phục thành công!"); 
+ 
+ // Trì hoãn 300ms để trình duyệt hoàn tất ghi dữ liệu xuống bộ nhớ chip vật lý trước khi tải lại trang
+ setTimeout(function() {
+ location.reload();
+ }, 300);
+ }
+ } catch (e) { 
+ alert("File lỗi cấu trúc hoặc sai định dạng: " + e.message); 
+ }
+ input.value = '';
+ };
+ reader.readAsText(input.files[0]);
  }
 
  var mSel = document.getElementById('m');
