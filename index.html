@@ -260,6 +260,14 @@
        <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #64748b;" onclick="switchScreen('password-manager-section'); renderPasswordLogs();">🔐 Sổ Lưu Mật Khẩu</button>
        <button class="kk-btn" style="padding: 14px; font-size: 15px; background-color: #0ea5e9;" onclick="switchScreen('code-converter-section'); renderCodeHome();">🔀 Tra Cứu Mã NVL</button>
      </div>
+<!-- NÚT NẠP LẠI DỮ LIỆU ĐẶT TRONG TRANG ẨN MẬT KHẨU -->
+<div style="margin: 15px 0; padding: 10px; border-top: 1px dashed #ccc;">
+  <p style="margin: 0 0 8px 0; font-size: 13px; color: #555; font-weight: bold;">ĐỒNG BỘ NỘI BỘ (CHẤM CÔNG HÀNH CHÍNH):</p>
+  <button type="button" onclick="taiDuLieuTuGoogleSheet()" style="background-color: #e0a800; color: #212529; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 5px;">
+    🔄 Nạp lại dữ liệu từ Sheet về máy
+  </button>
+</div>
+
      <p style="font-size: 12px; color: #94a3b8; text-align: center; margin-top: 25px; font-style: italic;">Hệ thống quản lý DJ&M 2026</p>
    </div>
  </div>
@@ -1321,6 +1329,92 @@ function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
   }
 }
 
+// HÀM TẢI NGƯỢC DỮ LIỆU TỪ SHEET VỀ MÁY (ĐẶT TRONG TRANG ẨN)
+async function taiDuLieuTuGoogleSheet() {
+  // BẮT BUỘC: Dán đường link CSV (Tab ChamCongHanhChinh) của bạn vào giữa hai dấu nháy đơn dưới đây:
+  const LINK_CSV_SHEET = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQJrDqtjG1VEfB2GnhoinAPRvk9CP0payzn13Lz6TPaGSZuJREKqI3ldSGa2xfxt4z5bLIKuk68ddd9/pubhtml';
+  
+  if (!LINK_CSV_SHEET || LINK_CSV_SHEET.includes("CỦA_BẠN")) {
+    alert("Chưa cấu hình đường link CSV để đọc dữ liệu từ Google Sheet!");
+    return;
+  }
+  
+  // Xác nhận hành động với người dùng
+  if (!confirm("Bạn có chắc chắn muốn kéo dữ liệu chấm công mới nhất từ Google Sheet về máy này không?")) {
+    return;
+  }
+  
+  try {
+    // 1. Xác định Tháng/Năm và Mã nhân viên đang chọn trên giao diện chính
+    var m = document.getElementById('m')?.value || "0";
+    var y = document.getElementById('y')?.value || "0";
+    var currentThangNam = m + "/" + y;
+    var currentIdEmp = typeof idEmp !== "undefined" ? idEmp : "0";
+    
+    if (currentIdEmp === "0" || currentIdEmp === "") {
+      alert("Vui lòng quay lại màn hình chính chọn một Nhân viên trước khi bấm nạp!");
+      return;
+    }
+
+    // 2. Gọi lệnh lấy văn bản thô CSV từ Google Sheet ngầm
+    const response = await fetch(LINK_CSV_SHEET);
+    if (!response.ok) throw new Error("Kết nối thất bại");
+    
+    const csvText = await response.text();
+    // Tách văn bản thành mảng các dòng dữ liệu
+    const lines = csvText.split("\n");
+    
+    var indexDevice   = 1; // Cột B: Tên Máy
+    var indexThangNam = 2; // Cột C: Tháng/Năm
+    var indexIdEmp    = 3; // Cột D: Mã NV
+    var indexTongCong = 5; // Cột F: Tổng Ngày Công
+    
+    var timThayLichSu = false;
+    var soNgayCongMoi = 0;
+
+    // 3. Quét ngược từ dòng cuối cùng (dữ liệu mới nhất) lên dòng đầu tiên của file Sheet
+    for (let i = lines.length - 1; i >= 1; i--) {
+      if (!lines[i].trim()) continue;
+      
+      // Bóc tách các cột trong dòng văn bản CSV bằng dấu phẩy
+      var columns = lines[i].split(",");
+      
+      var rowDevice   = columns[indexDevice] ? columns[indexDevice].toString().trim().replace(/['"]/g, "") : "";
+      var rowThangNam = columns[indexThangNam] ? columns[indexThangNam].toString().trim().replace(/['"]/g, "") : "";
+      var rowIdEmp    = columns[indexIdEmp] ? columns[indexIdEmp].toString().trim().replace(/['"]/g, "") : "";
+      
+      // Tìm dòng trùng khớp định danh Mã NV và Tháng/Năm
+      if (rowIdEmp === currentIdEmp.toString() && rowThangNam === currentThangNam) {
+        soNgayCongMoi = parseFloat(columns[indexTongCong]) || 0;
+        timThayLichSu = true;
+        break; // Lấy được dòng mới nhất rồi lập tức thoát vòng lặp
+      }
+    }
+
+    // 4. Cập nhật dữ liệu vào LocalStorage mà không làm hỏng cấu trúc cũ
+    if (timThayLichSu) {
+      var storageKey = "att-id-" + currentIdEmp + "-" + m + "-" + y;
+      var dataThang = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; 
+      
+      // Khởi tạo/Cập nhật công trạng đại diện vào Ngày 1 trong bộ nhớ máy để hàm calc() tự động xử lý tính toán
+      dataThang["1"] = { hrs: soNgayCongMoi, note: "Dữ liệu nạp từ Google Sheet" };
+      
+      localStorage.setItem(storageKey, JSON.stringify(dataThang));
+      
+      // Thực thi làm mới giao diện hiển thị ngay lập tức
+      if (typeof calc === "function") calc();
+      if (typeof scrollDay === "function") scrollDay();
+      
+      alert("Thành công! Đã nạp số ngày công mới nhất (" + soNgayCongMoi + " công) của nhân viên về máy nội bộ.");
+    } else {
+      alert("Không tìm thấy dòng dữ liệu lịch sử nào của nhân viên này trong tháng " + currentThangNam + " trên Google Sheet!");
+    }
+
+  } catch (error) {
+    console.error("Lỗi fetch dữ liệu: ", error);
+    alert("Không thể kết nối mạng tới Google Sheet. Vui lòng kiểm tra lại đường link CSV!");
+  }
+}
 
 
 </script>
