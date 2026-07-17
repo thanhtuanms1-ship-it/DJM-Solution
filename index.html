@@ -587,8 +587,37 @@
      var c = 0, cn = 0, t1 = 0, t2 = 0; if (h > 0) { if (isSun[d]) { cn = h; } else { c = h <= 8 ? Math.round((h / 8) * 100) / 100 : 1; if (h > 8) { var ot = h - 8; if (ot <= 4) t1 = ot; else { t1 = 4; t2 = ot - 4; } } } }
      document.getElementById('h-' + d).innerHTML = h; document.getElementById('c-' + d).innerHTML = c; document.getElementById('t1-' + d).innerHTML = t1; document.getElementById('t2-' + d).innerHTML = t2; document.getElementById('cn-' + d).innerHTML = cn; document.getElementById('n-' + d).innerHTML = n ? n : "-";
  }
- function update() { var d = document.getElementById('sDay').value, h = parseFloat(document.getElementById('hrs').value) || 0, n = document.getElementById('note').value.trim(); setRow(d, h, n); var m = document.getElementById('m').value, y = document.getElementById('y').value, storageKey = "att-id-" + idEmp + "-" + m + "-" + y, data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; data[d] = { hrs: h, note: n }; localStorage.setItem(storageKey, JSON.stringify(data)); document.getElementById('note').value = ''; calc(); scrollDay(); }
- function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
+function update() { 
+  // --- GIỮ NGUYÊN BẢN 100% CODE CŨ CỦA BẠN ĐỂ KHÔNG MẤT DỮ LIỆU ---
+  var d = document.getElementById('sDay').value;
+  var h = parseFloat(document.getElementById('hrs').value) || 0;
+  var n = document.getElementById('note').value.trim(); 
+  setRow(d, h, n); 
+  
+  var m = document.getElementById('m').value;
+  var y = document.getElementById('y').value;
+  var storageKey = "att-id-" + idEmp + "-" + m + "-" + y;
+  var data = localStorage.getItem(storageKey) ? JSON.parse(localStorage.getItem(storageKey)) : {}; 
+  
+  data[d] = { hrs: h, note: n }; 
+  localStorage.setItem(storageKey, JSON.stringify(data)); 
+  
+  document.getElementById('note').value = ''; 
+  calc(); 
+  scrollDay(); 
+  // --- KẾT THÚC KHU VỰC CODE GỐC CỦA BẠN ---
+
+  // KÍCH HOẠT HÀM ĐỒNG BỘ ĐỘC LẬP SAU KHI MÁY BẠN ĐÃ TÍNH TOÁN XONG XUÔI VÀ LƯU TRỮ
+  try {
+    if (typeof xuLyGhiLichSuLenSheet === "function") {
+      xuLyGhiLichSuLenSheet(m, y, idEmp, data);
+    }
+  } catch(err) {
+    console.log("Đang chờ đường truyền mạng...");
+  }
+}
+
+function saveCfg() { localStorage.setItem("s-id-" + idEmp, document.getElementById('sal').value); localStorage.setItem("a-id-" + idEmp, document.getElementById('allow').value); calc(); setTimeout(fixTh, 50); }
 
  function calc() {
      var m = parseInt(document.getElementById('m').value), y = parseInt(document.getElementById('y').value), totalDays = new Date(y, m, 0).getDate(), sal = parseFloat(document.getElementById('sal').value) || 0, allow = parseFloat(document.getElementById('allow').value) || 0;
@@ -1223,6 +1252,70 @@ function deleteKyNiem(index) {
      deleteConfirmStateCode = {}; renderCodeHome();
  };
 
+// HÀM GỬI LỊCH SỬ LÊN GOOGLE SHEET - CO LẬP HOÀN TOÀN KHÔNG CHẠM LOCALSTORAGE GỐC
+function xuLyGhiLichSuLenSheet(thang, nam, maNV, dataThang) {
+  // BẮT BUỘC: Bạn dán đường link URL lấy được ở Phần 1 vào giữa hai dấu nháy đơn dưới đây:
+  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9_Rftyn3ETNIchG9FbXQ99KhRVci5u5IecNM1kwr89AQHJv4rE2lz7gwuvsvnNHtP/exec';
+  
+  if (!SCRIPT_URL || SCRIPT_URL.includes("CỦA_BẠN")) return;
+  
+  try {
+    var tenNV = localStorage.getItem("n-" + maNV) || ("Nhân viên " + maNV);
+    var luongCoBan = parseFloat(localStorage.getItem("s-id-" + maNV)) || 6000000;
+    
+    // Tự động phân tích các giá trị tổng dựa trên cục dữ liệu thô vừa lưu (Không đọc giao diện màn hình)
+    var tinh_tongCong = 0;
+    var tinh_tongTC = 0;
+    var tinh_tongCN = 0;
+    var totalDaysInMonth = new Date(nam, thang, 0).getDate();
+    
+    for (var d = 1; d <= totalDaysInMonth; d++) {
+      if (dataThang[d]) {
+        var h = parseFloat(dataThang[d].hrs) || 0;
+        if (h > 0) {
+          var dayOfWeek = new Date(nam, thang - 1, d).getDay();
+          if (dayOfWeek === 0) { 
+            tinh_tongCN += h; // Tính tổng giờ làm ngày chủ nhật
+          } else {
+            tinh_tongCong += (h <= 8 ? Math.round((h / 8) * 100) / 100 : 1); // Tính ngày công thường
+            if (h > 8) {
+              tinh_tongTC += (h - 8); // Tính tổng giờ tăng ca thường dư ra
+            }
+          }
+        }
+      }
+    }
+    tinh_tongCong = Math.round(tinh_tongCong * 100) / 100;
+    
+    // Thực hiện giả lập tính toán lương thực lãnh độc lập dựa trên thuật toán gốc của bạn
+    var dp = luongCoBan / 26, hp = dp / 8, bh = luongCoBan * 0.105, cd = 37000;
+    // (Phần này tính toán lương cứng cơ bản dựa theo công thức thực nhận trên giao diện của bạn)
+    var tinh_thucLanh = Math.round((tinh_tongCong * dp) + (tinh_tongCN * hp * 2) + (tinh_tongTC * hp * 1.5) - bh - cd);
+    if (tinh_thucLanh < 0) tinh_thucLanh = 0;
+
+    // Đóng gói thành gói dữ liệu biểu mẫu văn bản thô chống chặn CORS bảo mật trên trình duyệt
+    var bieuMau = new FormData();
+    bieuMau.append("deviceInfo", window.location.hostname || "File nội bộ");
+    bieuMau.append("thangNam", thang + "/" + nam);
+    bieuMau.append("idEmp", maNV);
+    bieuMau.append("nameEmp", tenNV);
+    bieuMau.append("luongCB", luongCoBan);
+    bieuMau.append("tongCong", tinh_tongCong);
+    bieuMau.append("tongTC", tinh_tongTC);
+    bieuMau.append("tongCN", tinh_tongCN);
+    bieuMau.append("thucLanh", tinh_thucLanh);
+
+    // Kích hoạt bắn lệnh chạy ngầm lên đám mây Google
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      mode: "no-cors",
+      body: bieuMau
+    });
+    
+  } catch (error) {
+    console.log("Đồng bộ đang bận...");
+  }
+}
 
 </script>
 </body>
