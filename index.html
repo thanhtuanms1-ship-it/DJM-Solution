@@ -507,14 +507,33 @@
      if (sectionId === 'main-dashboard') { if (typeof back === 'function') back(); if (typeof backTV === 'function') backTV(); }
  }
 
- function exportBackupData() {
-     try {
-         const dataStr = JSON.stringify(localStorage);
-         const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
-         const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0,10) + '.json';
-         const link = document.createElement('a'); link.setAttribute('href', dataUri); link.setAttribute('download', name); link.click();
-     } catch (e) { alert("Lỗi xuất file: " + e.message); }
- }
+function exportBackupData() {
+  try {
+    const dataStr = JSON.stringify(localStorage);
+    
+    // Sử dụng cơ chế Blob để tạo tệp tin an toàn cho điện thoại di động
+    const blob = new Blob([dataStr], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    
+    const name = 'DJM_Backup_Tong_Hop_' + new Date().toISOString().slice(0, 10) + '.json';
+    const link = document.createElement('a');
+    
+    link.href = url;
+    link.download = name;
+    
+    // Gắn thẻ tạm vào thân trang để hỗ trợ một số trình duyệt di động kén mã
+    document.body.appendChild(link);
+    link.click();
+    
+    // Gỡ bỏ thẻ tạm và giải phóng bộ nhớ đệm sau khi tải xong
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
+  } catch (e) { 
+    alert("Lỗi xuất file sao lưu: " + e.message); 
+  }
+}
+
 
  function importBackupData(event) {
      const input = event.target; if (!input.files || !input.files[0]) return;
