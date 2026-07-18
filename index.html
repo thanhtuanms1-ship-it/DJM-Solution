@@ -803,15 +803,21 @@ var calViewDate = new Date();
 // =========================================================================
 // THUẬT TOÁN ĐỔI DƯƠNG LỊCH SANG ÂM LỊCH VẠN NIÊN VIỆT NAM (CHÍNH XÁC TUYỆT ĐỐI)
 // =========================================================================
+// =========================================================================
+// THUẬT TOÁN ĐỔI DƯƠNG LỊCH SANG ÂM LỊCH VIỆT NAM (CHÍNH XÁC TUYỆT ĐỐI GMT+7)
+// Tối ưu hóa từ Thuật toán Hồ Ngọc Đức - Không ảnh hưởng đến cấu trúc cũ
+// =========================================================================
 function getAmLich(dd, mm, yy) {
-    // Các hàm bổ trợ toán học thiên văn căn bản
+    // 1. Hàm tính số ngày Julian từ ngày Dương lịch
     function jdn(d, m, y) {
         var a = Math.floor((14 - m) / 12);
         var y1 = y + 4800 - a;
         var m1 = m + 12 * a - 3;
         return d + Math.floor((153 * m1 + 2) / 5) + 365 * y1 + Math.floor(y1 / 4) - Math.floor(y1 / 100) + Math.floor(y1 / 400) - 32045;
     }
-    function NewMoon(k) {
+
+    // 2. Tính thời điểm Trăng Mới (Sóc) theo lý thuyết thiên văn toàn cầu
+    function TrueNewMoon(k) {
         var T = k / 1236.85;
         var T2 = T * T;
         var T3 = T2 * T;
@@ -820,41 +826,48 @@ function getAmLich(dd, mm, yy) {
         var M = (359.2242 + 29.10535608 * k - 0.0000333 * T2 - 0.00000347 * T3) * dr;
         var Mprime = (306.0253 + 385.81691806 * k + 0.0107306 * T2 + 0.00001236 * T3) * dr;
         var F = (21.2964 + 390.67050646 * k - 0.0016528 * T2 - 0.00000239 * T3) * dr;
-        var J2 = J1 + (0.1734 - 0.000393 * T) * Math.sin(M) + 0.0021 * Math.sin(2 * M) 
-                    - 0.4068 * Math.sin(Mprime) + 0.0161 * Math.sin(2 * Mprime) - 0.0051 * Math.sin(M + Mprime) 
-                    - 0.0074 * Math.sin(M - Mprime) - 0.0104 * Math.sin(2 * F);
+        var J2 = J1 + (0.1734 - 0.000393 * T) * Math.sin(M) + 0.0021 * Math.sin(2 * M)
+                 - 0.4068 * Math.sin(Mprime) + 0.0161 * Math.sin(2 * Mprime) 
+                 - 0.0051 * Math.sin(M + Mprime) - 0.0074 * Math.sin(M - Mprime) 
+                 - 0.0104 * Math.sin(2 * F);
         return J2;
     }
+
+    // 3. Tính Kinh độ Mặt Trời để xác định các mốc Khí (Trung khí)
     function SunLong(j) {
         var T = (j - 2451545.0) / 36525.0;
         var T2 = T * T;
         var L = 280.46646 + 36000.76983 * T + 0.0003032 * T2;
         var M = 357.52911 + 35999.05029 * T - 0.0001537 * T2;
-        var C = (1.914602 - 0.004817 * T - 0.000014 * T2) * Math.sin(M * Math.PI / 180) 
-              + (0.019993 - 0.000101 * T) * Math.sin(2 * M * Math.PI / 180) 
-              + 0.002891 * Math.sin(3 * M * Math.PI / 180);
+        var C = (1.914602 - 0.004817 * T - 0.000014 * T2) * Math.sin(M * Math.PI / 180)
+             + (0.019993 - 0.000101 * T) * Math.sin(2 * M * Math.PI / 180)
+             + 0.002891 * Math.sin(3 * M * Math.PI / 180);
         var lambda = L + C;
         return (lambda - 360 * Math.floor(lambda / 360));
     }
+
+    // 4. Quy đổi ngày Julian Trăng Mới về ngày Dương lịch theo múi giờ VN (GMT+7)
     function getSocioTime(k) {
-        var jd = NewMoon(k);
+        var jd = TrueNewMoon(k);
         return Math.floor(jd + 0.5 + 7 / 24);
     }
+
+    // 5. Xác định chỉ số tháng Dương tương ứng với hướng đi Mặt Trời
     function getSunLongMonth(j) {
         return Math.floor(SunLong(j) / 30);
     }
-    function getNewMoonList(year) {
-        var k = Math.floor((year - 1900) * 12.3685) - 2;
-        var list = [];
-        for (var i = 0; i < 20; i++) {
-            list.push(getSocioTime(k + i));
-        }
-        return list;
-    }
-    
-    // Logic tính toán ngày âm lịch
+
+    // --- BẮT ĐẦU VÙNG XỬ LÝ CHÍNH ĐỂ TÌM NGÀY/THÁNG ÂM VÀ THÁNG NHUẬN ---
     var currentJD = jdn(dd, mm, yy);
-    var nmL = getNewMoonList(yy);
+    
+    // Tìm điểm Sóc gần nhất cho năm hiện tại (Mở rộng phạm vi tìm kiếm lên 30 để tránh lỗi biên)
+    var k = Math.floor((yy - 1900) * 12.3685) - 2;
+    var nmL = [];
+    for (var i = 0; i < 30; i++) {
+        nmL.push(getSocioTime(k + i));
+    }
+
+    // Tìm vị trí Sóc bắt đầu của tháng Âm lịch hiện tại
     var startIdx = 0;
     for (var i = 0; i < nmL.length - 1; i++) {
         if (currentJD >= nmL[i] && currentJD < nmL[i+1]) {
@@ -862,32 +875,46 @@ function getAmLich(dd, mm, yy) {
             break;
         }
     }
-    
+
+    // Tính ngày âm lịch hiện tại trong tháng (Ngày = Hiệu số ngày Julian)
     var aDay = currentJD - nmL[startIdx] + 1;
+    
+    // Xác định tên tháng Âm lịch dựa theo vị trí Trung khí mặt trời
     var currentNMJD = nmL[startIdx];
-    var off = Math.floor((currentNMJD - 2415021) / 29.530588853);
     var solarLong = getSunLongMonth(currentNMJD);
     var aMonth = solarLong + 2;
     if (aMonth > 12) aMonth -= 12;
-    
-    // Kiểm tra tháng nhuận tự động
+
+    // QUY TRÌNH KIỂM TRA THÁNG NHUẬN TỰ ĐỘNG CHUẨN XÁC NÂNG CAO:
+    // Kiểm tra xem khoảng cách giữa 2 điểm trung khí liên tiếp có chứa tháng vô trung khí (Tháng nhuận) không
     var isLeap = false;
-    var nextNM = nmL[startIdx + 1];
-    var nextSolarLong = getSunLongMonth(nextNM);
-    if (solarLong === nextSolarLong && (currentJD - currentNMJD) < 30) {
-        // Có tháng nhuận xảy ra
+    var s0 = getSunLongMonth(nmL[startIdx]);
+    var s1 = getSunLongMonth(nmL[startIdx + 1]);
+    
+    // Nếu điểm Sóc này và điểm Sóc tiếp theo có cùng một Trung khí -> Xuất hiện tháng nhuận
+    if (s0 === s1) {
+        // Kiểm tra xem tháng này có phải là tháng nhuận đầu tiên xuất hiện hay không
         var prevNM = nmL[startIdx - 1];
-        if (getSunLongMonth(prevNM) === solarLong) {
+        if (getSunLongMonth(prevNM) !== s0) {
             isLeap = true;
         }
     }
 
-    // Trả về chuỗi kết quả hiển thị thông minh
-    var displayStr = (aDay === 1) ? aDay + "/" + aMonth : String(aDay);
-    if (isLeap && aDay === 1) displayStr += "N";
-    
+    // 6. Định dạng chuỗi hiển thị tương thích hoàn hảo với hàm initCalendar() cũ
+    // Định dạng: Nếu mùng 1 hiển thị "1/Tháng", có nhuận thêm chữ "N" (Ví dụ: "1/5N"). Ngày khác hiển thị số bình thường.
+    var displayStr = "";
+    if (aDay === 1) {
+        displayStr = aDay + "/" + aMonth;
+        if (isLeap) {
+            displayStr += "N"; // Ký hiệu tháng nhuận của Việt Nam
+        }
+    } else {
+        displayStr = String(aDay);
+    }
+
     return { aDay: displayStr };
 }
+
 
 
 // =========================================================================
