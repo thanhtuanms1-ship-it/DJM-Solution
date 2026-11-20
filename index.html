@@ -767,7 +767,7 @@ function fixThTV() { return; }
      }
      for (var key in weekGroups) { var over6Count = 0, weekData = weekGroups[key]; for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) over6Count++; } if (over6Count >= 2) { for (var j = 0; j < weekData.length; j++) { if (weekData[j] && weekData[j].ot > 6) totalMeal += 10000; } } }
      tc = Math.round(tc * 100) / 100; var dp = sal / 26; var total = Math.round((tc * dp) + (tt1 * t1_price) + (tt2 * t2_price) + (tcn * cn_price) + allow + totalMeal);
-     document.getElementById('outTV').innerHTML = "<span>Công: " + tc + " | TCT: " + tt1 + "h | TCĐ: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
+     document.getElementById('outTV').innerHTML = "<span>Công: " + tc + " | TCThường: " + tt1 + "h | TCĐêm: " + tt2 + "h | CN: " + tcn + "h</span><span class='orange'>Tiền ăn: +" + totalMeal.toLocaleString('vi-VN') + "đ</span><span class='green'>Thực nhận: " + total.toLocaleString('vi-VN') + " VND</span>";
  }
  function scrollDayTV() { 
     var d = document.getElementById('sDayTV').value; 
